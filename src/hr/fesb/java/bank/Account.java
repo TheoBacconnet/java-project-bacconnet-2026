@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Account {
+public abstract class Account implements Transactable, Reportable {
     private String accountId;
     private String customerId;
     private double balance;
@@ -20,6 +20,7 @@ public abstract class Account {
         this.transactions = new ArrayList<>();
     }
 
+    @Override
     public double getBalance() {
         return balance;
     }
@@ -40,6 +41,7 @@ public abstract class Account {
         this.balance = balance;
     }
 
+    @Override
     public void deposit(double amount) {
         if (amount > 0 && active) {
             balance += amount;
@@ -47,10 +49,15 @@ public abstract class Account {
         }
     }
 
+    @Override
     public String getSummary() {
         return String.format("Account [%s] | %s | Balance: %.2f", accountId, getAccountType(), balance);
     }
 
+    @Override
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
     public abstract void applyMonthlyRules();
     public abstract void withdraw(double amount);
     public abstract String getAccountType();
