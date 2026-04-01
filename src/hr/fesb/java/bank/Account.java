@@ -1,16 +1,23 @@
 package hr.fesb.java.bank;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class Account {
     private String accountId;
     private String customerId;
     private double balance;
     private boolean active;
+    private List<Transaction> transactions;
+
 
     protected Account(String accountId, String customerId, double initialBalance) {
         this.accountId = accountId;
         this.customerId = customerId;
         this.balance = initialBalance;
         this.active = true;
+        this.transactions = new ArrayList<>();
     }
 
     public double getBalance() {
@@ -36,6 +43,7 @@ public abstract class Account {
     public void deposit(double amount) {
         if (amount > 0 && active) {
             balance += amount;
+            transactions.add(new Transaction(Transaction.Type.DEPOSIT, LocalDateTime.now(), amount, balance));
         }
     }
 
