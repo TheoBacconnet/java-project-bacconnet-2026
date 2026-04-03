@@ -12,7 +12,7 @@ public class CheckingAccount extends Account {
 
     @Override
     public void withdraw(double amount) {
-        if (getBalance() - amount < -overdraftLimit) {
+        if (getBalance() - amount < overdraftLimit) {
             System.out.println("Error: overdraft limit reached.");
             return;
         }
