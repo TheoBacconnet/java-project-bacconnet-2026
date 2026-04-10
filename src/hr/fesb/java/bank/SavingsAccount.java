@@ -15,18 +15,18 @@ public class SavingsAccount extends Account {
     }
 
     @Override
-    public void withdraw(double amount) {
+    public void withdraw(double amount) throws InsufficientFundsException {
+        if (amount <= 0) throw new IllegalArgumentException("Withdrawal amount must be positive.");
         if (withdrawalsThisMonth >= maxWithdrawalsPerMonth) {
-            System.out.println("Error: maximum number of withdrawals for this month reached.");
-            return;
+            throw new InsufficientFundsException(amount, 0);
         }
         if (getBalance() < amount) {
-            System.out.println("Error: insufficient funds.");
-            return;
+            throw new InsufficientFundsException(amount, getBalance());
         }
         setBalance(getBalance() - amount);
         withdrawalsThisMonth++;
         getTransactions().add(new Transaction(Transaction.Type.WITHDRAWAL, LocalDateTime.now(), amount, getBalance()));
+
     }
 
     @Override

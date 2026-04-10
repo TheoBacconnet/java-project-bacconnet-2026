@@ -22,18 +22,30 @@ public class BankApp {
         System.out.println(checking.getSummary());
 
         System.out.println("\n=== WITHDRAW ===");
-        checking.withdraw(200.0);
+        try {
+            checking.withdraw(200.0);
+        } catch (InsufficientFundsException e) {
+            System.out.println(e.getMessage());
+        }
         System.out.println(checking.getSummary());
 
         System.out.println("\n=== OVERDRAFT ===");
-        checking.withdraw(2000.0);
+        try {
+            checking.withdraw(2000.0);
+        } catch (InsufficientFundsException e) {
+            System.out.println(e.getMessage());
+        }
         System.out.println(checking.getSummary());
 
         System.out.println("\n=== SAVINGS WITHDRAW LIMIT ===");
-        savings.withdraw(50.0);
-        savings.withdraw(50.0);
-        savings.withdraw(50.0);
-        savings.withdraw(50.0);
+        try {
+            savings.withdraw(50.0);
+            savings.withdraw(50.0);
+            savings.withdraw(50.0);
+            savings.withdraw(50.0); // 4th withdrawal should fail
+        } catch (InsufficientFundsException e) {
+            System.out.println(e.getMessage());
+        }
         System.out.println(savings.getSummary());
 
         System.out.println("\n=== MONTHLY RULES ===");

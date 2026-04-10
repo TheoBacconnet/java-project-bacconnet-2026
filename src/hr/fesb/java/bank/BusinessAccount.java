@@ -15,10 +15,10 @@ public class BusinessAccount extends Account{
     }
 
     @Override
-    public void withdraw(double amount) {
+    public void withdraw(double amount) throws InsufficientFundsException {
+        if (amount <= 0) throw new IllegalArgumentException("Amount must be positive.");
         if (getBalance() - amount < overdraftLimit) {
-            System.out.println("Error: overdraft limit reached.");
-            return;
+            throw new InsufficientFundsException(amount, getBalance() - overdraftLimit);
         }
         setBalance(getBalance() - amount);
         getTransactions().add(new Transaction(Transaction.Type.WITHDRAWAL, LocalDateTime.now(), amount, getBalance()));

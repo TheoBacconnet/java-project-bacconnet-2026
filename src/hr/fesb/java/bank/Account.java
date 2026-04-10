@@ -11,7 +11,6 @@ public abstract class Account implements Transactable, Reportable {
     private boolean active;
     private List<Transaction> transactions;
 
-
     protected Account(String accountId, String customerId, double initialBalance) {
         this.accountId = accountId;
         this.customerId = customerId;
@@ -43,10 +42,10 @@ public abstract class Account implements Transactable, Reportable {
 
     @Override
     public void deposit(double amount) {
-        if (amount > 0 && active) {
-            balance += amount;
-            transactions.add(new Transaction(Transaction.Type.DEPOSIT, LocalDateTime.now(), amount, balance));
-        }
+        if (amount <= 0)
+            throw new IllegalArgumentException("Deposit amount must be positive.");
+        balance += amount;
+        transactions.add(new Transaction(Transaction.Type.DEPOSIT, LocalDateTime.now(), amount, balance));
     }
 
     @Override
@@ -58,8 +57,11 @@ public abstract class Account implements Transactable, Reportable {
     public List<Transaction> getTransactions() {
         return transactions;
     }
+
     public abstract void applyMonthlyRules();
-    public abstract void withdraw(double amount);
+
+    public abstract void withdraw(double amount) throws InsufficientFundsException;
+
     public abstract String getAccountType();
 
 }
