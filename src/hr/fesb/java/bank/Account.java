@@ -40,6 +40,10 @@ public abstract class Account implements Transactable, Reportable {
         this.balance = balance;
     }
 
+    public void closeAccount(){
+        this.active = false;
+    }
+
     @Override
     public void deposit(double amount) {
         if (amount <= 0)
