@@ -108,4 +108,43 @@ public class Bank {
         }
         return total;
     }
+
+    public List<Account> getAllAccounts() {
+        List<Account> allAccounts = new ArrayList<>();
+        for (Customer customer : customers) {
+            allAccounts.addAll(customer.getAccounts());
+        }
+        return allAccounts;
+    }
+
+    public List<Account> searchByCustomerName(String query){
+        List<Account> result = new ArrayList<>();
+        String lowerQuery = query.toLowerCase();
+        for (Customer c: customers){
+            if (c.getFullName().toLowerCase().contains(lowerQuery)){
+                result.addAll(c.getAccounts());
+            }
+        }
+        return result;
+    }
+
+    public List<Account> filterByType(String accountType){
+        List<Account> result = new ArrayList<>();
+        for (Account a : getAllAccounts()){
+            if (a.getAccountType().equals(accountType)){
+                result.add(a);
+            }
+        }
+        return result;
+    }
+
+    public List<Account> filterByBalanceRange(double min, double max){
+        List<Account> result = new ArrayList<>();
+        for (Account a : getAllAccounts()){
+            if (a.getBalance() >= min && a.getBalance() <= max){
+                result.add(a);
+            }
+        }
+        return result;
+    }
 }
