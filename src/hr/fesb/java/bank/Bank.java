@@ -117,31 +117,31 @@ public class Bank {
         return allAccounts;
     }
 
-    public List<Account> searchByCustomerName(String query){
+    public List<Account> searchByCustomerName(String query) {
         List<Account> result = new ArrayList<>();
         String lowerQuery = query.toLowerCase();
-        for (Customer c: customers){
-            if (c.getFullName().toLowerCase().contains(lowerQuery)){
+        for (Customer c : customers) {
+            if (c.getFullName().toLowerCase().contains(lowerQuery)) {
                 result.addAll(c.getAccounts());
             }
         }
         return result;
     }
 
-    public List<Account> filterByType(String accountType){
+    public List<Account> filterByType(String accountType) {
         List<Account> result = new ArrayList<>();
-        for (Account a : getAllAccounts()){
-            if (a.getAccountType().equals(accountType)){
+        for (Account a : getAllAccounts()) {
+            if (a.getAccountType().equals(accountType)) {
                 result.add(a);
             }
         }
         return result;
     }
 
-    public List<Account> filterByBalanceRange(double min, double max){
+    public List<Account> filterByBalanceRange(double min, double max) {
         List<Account> result = new ArrayList<>();
-        for (Account a : getAllAccounts()){
-            if (a.getBalance() >= min && a.getBalance() <= max){
+        for (Account a : getAllAccounts()) {
+            if (a.getBalance() >= min && a.getBalance() <= max) {
                 result.add(a);
             }
         }

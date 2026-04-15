@@ -19,9 +19,8 @@ public class CheckingAccount extends Account {
             throw new InsufficientFundsException(amount, getBalance() - overdraftLimit);
         }
         setBalance(getBalance() - amount);
-        getTransactions().add(new Transaction(Transaction.Type.WITHDRAWAL, LocalDateTime.now(), amount, getBalance()));
+        getTransactions().add(new Transaction(LocalDateTime.now(), Transaction.Type.WITHDRAWAL, amount, getBalance()));
     }
-
 
     @Override
     public void applyMonthlyRules() {
@@ -39,5 +38,10 @@ public class CheckingAccount extends Account {
 
     public void setOverdraftLimit(double overdraftLimit) {
         this.overdraftLimit = overdraftLimit;
+    }
+
+    @Override
+    public String extraFieldsToCsv() {
+        return String.valueOf(overdraftLimit);
     }
 }

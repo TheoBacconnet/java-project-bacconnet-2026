@@ -40,7 +40,7 @@ public abstract class Account implements Transactable, Reportable {
         this.balance = balance;
     }
 
-    public void closeAccount(){
+    public void closeAccount() {
         this.active = false;
     }
 
@@ -49,7 +49,7 @@ public abstract class Account implements Transactable, Reportable {
         if (amount <= 0)
             throw new IllegalArgumentException("Deposit amount must be positive.");
         balance += amount;
-        transactions.add(new Transaction(Transaction.Type.DEPOSIT, LocalDateTime.now(), amount, balance));
+        transactions.add(new Transaction(LocalDateTime.now(), Transaction.Type.DEPOSIT, amount, balance));
     }
 
     @Override
@@ -67,5 +67,15 @@ public abstract class Account implements Transactable, Reportable {
     public abstract void withdraw(double amount) throws InsufficientFundsException;
 
     public abstract String getAccountType();
+
+    public abstract String extraFieldsToCsv();
+
+    public void setBalanceDirectly(double balance) {
+        this.balance = balance;
+    }
+
+    public void addTransactionDirectly(Transaction transaction) {
+        this.transactions.add(transaction);
+    }
 
 }

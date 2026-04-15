@@ -2,12 +2,13 @@ package hr.fesb.java.bank;
 
 import java.time.LocalDateTime;
 
-public class BusinessAccount extends Account{
+public class BusinessAccount extends Account {
     private double overdraftLimit;
     private String companyName;
     private String vatNumber;
 
-    public BusinessAccount(String accountId, String customerId, double initialBalance, double overdraftLimit, String companyName, String vatNumber) {
+    public BusinessAccount(String accountId, String customerId, double initialBalance, double overdraftLimit,
+            String companyName, String vatNumber) {
         super(accountId, customerId, initialBalance);
         this.overdraftLimit = overdraftLimit;
         this.companyName = companyName;
@@ -16,12 +17,13 @@ public class BusinessAccount extends Account{
 
     @Override
     public void withdraw(double amount) throws InsufficientFundsException {
-        if (amount <= 0) throw new IllegalArgumentException("Amount must be positive.");
+        if (amount <= 0)
+            throw new IllegalArgumentException("Amount must be positive.");
         if (getBalance() - amount < overdraftLimit) {
             throw new InsufficientFundsException(amount, getBalance() - overdraftLimit);
         }
         setBalance(getBalance() - amount);
-        getTransactions().add(new Transaction(Transaction.Type.WITHDRAWAL, LocalDateTime.now(), amount, getBalance()));
+        getTransactions().add(new Transaction(LocalDateTime.now(), Transaction.Type.WITHDRAWAL, amount, getBalance()));
     }
 
     @Override
@@ -56,6 +58,11 @@ public class BusinessAccount extends Account{
 
     public void setVatNumber(String vatNumber) {
         this.vatNumber = vatNumber;
+    }
+
+    @Override
+    public String extraFieldsToCsv() {
+        return overdraftLimit + "," + companyName + "," + vatNumber;
     }
 
 }
