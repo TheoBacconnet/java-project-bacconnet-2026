@@ -36,6 +36,10 @@ public abstract class Account implements Transactable, Reportable {
         return active;
     }
 
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
     protected void setBalance(double balance) {
         this.balance = balance;
     }

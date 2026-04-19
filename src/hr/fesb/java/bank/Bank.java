@@ -7,11 +7,15 @@ public class Bank {
     private List<Customer> customers;
     private int customerCounter;
     private int accountCounter;
+    private AccountFileManager fileManager;
 
     public Bank() {
         this.customers = new ArrayList<>();
         this.customerCounter = 1000;
         this.accountCounter = 1000;
+        this.fileManager = new AccountFileManager();
+        load();
+        syncCounters();
     }
 
     public Customer createCustomer(String firstName, String lastName, String email, String phone) {
@@ -146,5 +150,27 @@ public class Bank {
             }
         }
         return result;
+    }
+
+    public void save() {
+        fileManager.saveAll(customers);
+    }
+
+    private void load() {
+        fileManager.loadAll(customers);
+    }
+
+    private void syncCounters() {
+        for (Customer c : customers) {
+            int custIdNum = Integer.parseInt(c.getCustomerId().substring(1));
+            if (custIdNum > customerCounter)
+                customerCounter = custIdNum;
+
+            for (Account a : c.getAccounts()) {
+                int accIdNum = Integer.parseInt(a.getAccountId().substring(1));
+                if (accIdNum > accountCounter)
+                    accountCounter = accIdNum;
+            }
+        }
     }
 }
