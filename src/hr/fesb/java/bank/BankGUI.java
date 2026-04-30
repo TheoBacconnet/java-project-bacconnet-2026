@@ -3,8 +3,7 @@ package hr.fesb.java.bank;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.List;
+import java.util.Collection;
 
 public class BankGUI extends JFrame {
     private Bank bank;
@@ -216,7 +215,7 @@ public class BankGUI extends JFrame {
         String minS = txtMinBalance.getText().trim();
         String maxS = txtMaxBalance.getText().trim();
 
-        List<Account> list = bank.getAllAccounts();
+        Collection<Account> list = bank.getAllAccounts();
 
         if (!type.equals("All")){
             list = bank.filterByType(type);

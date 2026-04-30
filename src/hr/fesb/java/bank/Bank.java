@@ -2,15 +2,20 @@ package hr.fesb.java.bank;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Bank {
-    private List<Customer> customers;
+    private Map<String, Customer> customers;
+    private Map<String, Account> accounts;
     private int customerCounter;
     private int accountCounter;
     private AccountFileManager fileManager;
 
     public Bank() {
-        this.customers = new ArrayList<>();
+        this.customers = new HashMap<>();
+        this.accounts = new HashMap<>();
         this.customerCounter = 1000;
         this.accountCounter = 1000;
         this.fileManager = new AccountFileManager();
@@ -21,21 +26,20 @@ public class Bank {
     public Customer createCustomer(String firstName, String lastName, String email, String phone) {
         String customerId = "C" + (++customerCounter);
         Customer customer = new Customer(customerId, firstName, lastName, email, phone);
-        customers.add(customer);
+        customers.put(customerId, customer);
         return customer;
     }
 
     public Customer findCustomer(String customerId) throws AccountNotFoundException {
-        for (Customer customer : customers) {
-            if (customer.getCustomerId().equals(customerId)) {
-                return customer;
-            }
+        Customer customer = customers.get(customerId);
+        if (customer == null) {
+            throw new AccountNotFoundException(customerId);
         }
-        throw new AccountNotFoundException(customerId);
+        return customer;
     }
 
-    public List<Customer> getAllCustomers() {
-        return customers;
+    public Collection<Customer> getAllCustomers() {
+        return customers.values();
     }
 
     public CheckingAccount openCheckingAccount(String customerId, double initialBalance, double overdraftLimit)
@@ -44,6 +48,7 @@ public class Bank {
         String accountId = "A" + (++accountCounter);
         CheckingAccount account = new CheckingAccount(accountId, customerId, initialBalance, overdraftLimit);
         customer.addAccount(account);
+        accounts.put(accountId, account);
         return account;
     }
 
@@ -53,6 +58,7 @@ public class Bank {
         String accountId = "A" + (++accountCounter);
         SavingsAccount account = new SavingsAccount(accountId, customerId, initialBalance, monthlyRate, maxWithdrawals);
         customer.addAccount(account);
+        accounts.put(accountId, account);
         return account;
     }
 
@@ -63,6 +69,7 @@ public class Bank {
         BusinessAccount account = new BusinessAccount(accountId, customerId, initialBalance, overdraftLimit,
                 companyName, vatNumber);
         customer.addAccount(account);
+        accounts.put(accountId, account);
         return account;
     }
 
@@ -84,11 +91,9 @@ public class Bank {
     }
 
     public void applyMonthlyRules() {
-        for (Customer customer : customers) {
-            for (Account account : customer.getAccounts()) {
-                if (account.isActive()) {
-                    account.applyMonthlyRules();
-                }
+        for (Account account : accounts.values()) {
+            if (account.isActive()) {
+                account.applyMonthlyRules();
             }
         }
     }
@@ -98,33 +103,25 @@ public class Bank {
     }
 
     public int getTotalAccountCount() {
-        int count = 0;
-        for (Customer customer : customers) {
-            count += customer.getAccounts().size();
-        }
-        return count;
+        return accounts.size();
     }
 
     public double getTotalBalance() {
         double total = 0;
-        for (Customer customer : customers) {
-            total += customer.getTotalBalance();
+        for (Account account : accounts.values()) {
+            total += account.getBalance();
         }
         return total;
     }
 
-    public List<Account> getAllAccounts() {
-        List<Account> allAccounts = new ArrayList<>();
-        for (Customer customer : customers) {
-            allAccounts.addAll(customer.getAccounts());
-        }
-        return allAccounts;
+    public Collection<Account> getAllAccounts() {
+        return accounts.values();
     }
 
     public List<Account> searchByCustomerName(String query) {
         List<Account> result = new ArrayList<>();
         String lowerQuery = query.toLowerCase();
-        for (Customer c : customers) {
+        for (Customer c : customers.values()) {
             if (c.getFullName().toLowerCase().contains(lowerQuery)) {
                 result.addAll(c.getAccounts());
             }
@@ -157,16 +154,16 @@ public class Bank {
     }
 
     private void load() {
-        fileManager.loadAll(customers);
+        fileManager.loadAll(customers,accounts);
     }
 
     private void syncCounters() {
-        for (Customer c : customers) {
+        for (Customer c : customers.values()) {
             int custIdNum = Integer.parseInt(c.getCustomerId().substring(1));
             if (custIdNum > customerCounter)
                 customerCounter = custIdNum;
 
-            for (Account a : c.getAccounts()) {
+            for (Account a : accounts.values()) {
                 int accIdNum = Integer.parseInt(a.getAccountId().substring(1));
                 if (accIdNum > accountCounter)
                     accountCounter = accIdNum;
