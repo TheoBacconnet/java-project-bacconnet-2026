@@ -38,6 +38,14 @@ public class Bank {
         return customer;
     }
 
+    public Account findAccount(String accountId) throws AccountNotFoundException {
+        Account account = accounts.get(accountId);
+        if (account == null) {
+            throw new AccountNotFoundException(accountId);
+        }
+        return account;
+    }
+
     public Collection<Customer> getAllCustomers() {
         return customers.values();
     }
@@ -154,7 +162,7 @@ public class Bank {
     }
 
     private void load() {
-        fileManager.loadAll(customers,accounts);
+        fileManager.loadAll(customers, accounts);
     }
 
     private void syncCounters() {
