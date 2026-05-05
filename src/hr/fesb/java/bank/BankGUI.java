@@ -40,9 +40,12 @@ public class BankGUI extends JFrame {
         setSize(1000, 700);
         setLocationRelativeTo(null);
 
+        JButton btnNewCustomer = new JButton("New Customer");
+        btnNewCustomer.addActionListener(e -> showNewCustomerDialog());
         JButton btnNewAccount = new JButton("New Account");
         btnNewAccount.addActionListener(e -> showNewAccountDialog());
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        topPanel.add(btnNewCustomer);
         topPanel.add(btnNewAccount);
         add(topPanel, BorderLayout.NORTH);
 
@@ -313,23 +316,149 @@ public class BankGUI extends JFrame {
     }
 
     private void showNewAccountDialog() {
-        JDialog dialog = new JDialog(this, "New Customer & Account", true);
-        dialog.setSize(400, 320);
+        JDialog dialog = new JDialog(this, "New Account", true);
+        dialog.setSize(380, 300);
         dialog.setLocationRelativeTo(this);
         dialog.setLayout(new BorderLayout(10, 10));
 
-        JPanel form = new JPanel(new GridLayout(8, 2, 8, 8));
-        form.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        JPanel fixedForm = new JPanel(new GridLayout(3, 2, 8, 8));
+        fixedForm.setBorder(BorderFactory.createEmptyBorder(15, 15, 5, 15));
+
+        JComboBox<String> cmbCustomer = new JComboBox<>();
+        for (Customer c : bank.getAllCustomers()) {
+            cmbCustomer.addItem(c.getCustomerId() + " — " + c.getFullName());
+        }
+
+        JComboBox<String> cmbType = new JComboBox<>(
+                new String[] { "CheckingAccount", "SavingsAccount", "BusinessAccount" });
+        JTextField txtBalance = new JTextField();
+
+        fixedForm.add(new JLabel("Customer:"));
+        fixedForm.add(cmbCustomer);
+        fixedForm.add(new JLabel("Account Type:"));
+        fixedForm.add(cmbType);
+        fixedForm.add(new JLabel("Initial Balance:"));
+        fixedForm.add(txtBalance);
+
+        JPanel checkingPanel = new JPanel(new GridLayout(1, 2, 8, 8));
+        checkingPanel.setBorder(BorderFactory.createEmptyBorder(0, 15, 5, 15));
+        JTextField txtOverdraft = new JTextField();
+        checkingPanel.add(new JLabel("Overdraft Limit (EUR):"));
+        checkingPanel.add(txtOverdraft);
+
+        JPanel savingsPanel = new JPanel(new GridLayout(2, 2, 8, 8));
+        savingsPanel.setBorder(BorderFactory.createEmptyBorder(0, 15, 5, 15));
+        JTextField txtRate = new JTextField();
+        JTextField txtMaxW = new JTextField();
+        savingsPanel.add(new JLabel("Monthly Interest Rate:"));
+        savingsPanel.add(txtRate);
+        savingsPanel.add(new JLabel("Max Withdrawals/Month:"));
+        savingsPanel.add(txtMaxW);
+
+        JPanel businessPanel = new JPanel(new GridLayout(2, 2, 8, 8));
+        businessPanel.setBorder(BorderFactory.createEmptyBorder(0, 15, 5, 15));
+        JTextField txtOverdraftB = new JTextField();
+        JTextField txtCompany = new JTextField();
+        businessPanel.add(new JLabel("Overdraft Limit (EUR):"));
+        businessPanel.add(txtOverdraftB);
+        businessPanel.add(new JLabel("Company Name:"));
+        businessPanel.add(txtCompany);
+
+        JPanel extraPanel = new JPanel(new BorderLayout());
+        extraPanel.add(checkingPanel, BorderLayout.CENTER);
+
+        cmbType.addActionListener(e -> {
+            extraPanel.removeAll();
+            switch ((String) cmbType.getSelectedItem()) {
+                case "CheckingAccount":
+                    extraPanel.add(checkingPanel, BorderLayout.CENTER);
+                    dialog.setSize(380, 300);
+                    break;
+                case "SavingsAccount":
+                    extraPanel.add(savingsPanel, BorderLayout.CENTER);
+                    dialog.setSize(380, 330);
+                    break;
+                case "BusinessAccount":
+                    extraPanel.add(businessPanel, BorderLayout.CENTER);
+                    dialog.setSize(380, 330);
+                    break;
+            }
+            extraPanel.revalidate();
+            extraPanel.repaint();
+        });
+
+        JButton btnCreate = new JButton("Create");
+        JButton btnCancel = new JButton("Cancel");
+        btnCancel.addActionListener(e -> dialog.dispose());
+
+        btnCreate.addActionListener(e -> {
+            try {
+                String selected = (String) cmbCustomer.getSelectedItem();
+                if (selected == null) {
+                    JOptionPane.showMessageDialog(dialog, "Please select a customer.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                String customerId = selected.split(" — ")[0];
+                double balance = Double.parseDouble(txtBalance.getText().trim());
+                String type = (String) cmbType.getSelectedItem();
+
+                switch (type) {
+                    case "CheckingAccount":
+                        double overdraft = Double.parseDouble(txtOverdraft.getText().trim());
+                        bank.openCheckingAccount(customerId, balance, overdraft);
+                        break;
+                    case "SavingsAccount":
+                        double rate = Double.parseDouble(txtRate.getText().trim());
+                        int maxW = Integer.parseInt(txtMaxW.getText().trim());
+                        bank.openSavingsAccount(customerId, balance, rate, maxW);
+                        break;
+                    case "BusinessAccount":
+                        double bOverdraft = Double.parseDouble(txtOverdraftB.getText().trim());
+                        String company = txtCompany.getText().trim();
+                        bank.openBusinessAccount(customerId, balance, bOverdraft, company, "N/A");
+                        break;
+                }
+
+                bank.save();
+                refreshAll();
+                dialog.dispose();
+
+            } catch (AccountNotFoundException ex) {
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "Please enter valid numbers.",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnRow.add(btnCancel);
+        btnRow.add(btnCreate);
+
+        JPanel content = new JPanel(new BorderLayout());
+        content.add(fixedForm, BorderLayout.NORTH);
+        content.add(extraPanel, BorderLayout.CENTER);
+
+        dialog.add(content, BorderLayout.CENTER);
+        dialog.add(btnRow, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
+
+    private void showNewCustomerDialog() {
+        JDialog dialog = new JDialog(this, "New Customer", true);
+        dialog.setSize(350, 240);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout(10, 10));
+
+        JPanel form = new JPanel(new GridLayout(4, 2, 8, 8));
+        form.setBorder(BorderFactory.createEmptyBorder(15, 15, 5, 15));
 
         JTextField txtFirst = new JTextField();
         JTextField txtLast = new JTextField();
         JTextField txtEmail = new JTextField();
         JTextField txtPhone = new JTextField();
-        JTextField txtBalance = new JTextField();
-        JComboBox<String> cmbType = new JComboBox<>(
-                new String[] { "CheckingAccount", "SavingsAccount", "BusinessAccount" });
-        JTextField txtExtra1 = new JTextField();
-        JTextField txtExtra2 = new JTextField();
 
         form.add(new JLabel("First Name:"));
         form.add(txtFirst);
@@ -339,60 +468,38 @@ public class BankGUI extends JFrame {
         form.add(txtEmail);
         form.add(new JLabel("Phone:"));
         form.add(txtPhone);
-        form.add(new JLabel("Account Type:"));
-        form.add(cmbType);
-        form.add(new JLabel("Initial Balance:"));
-        form.add(txtBalance);
-        form.add(new JLabel("Extra field 1:"));
-        form.add(txtExtra1);
-        form.add(new JLabel("Extra field 2:"));
-        form.add(txtExtra2);
 
         JButton btnCreate = new JButton("Create");
         JButton btnCancel = new JButton("Cancel");
         btnCancel.addActionListener(e -> dialog.dispose());
+
         btnCreate.addActionListener(e -> {
             try {
                 String first = txtFirst.getText().trim();
                 String last = txtLast.getText().trim();
                 String email = txtEmail.getText().trim();
                 String phone = txtPhone.getText().trim();
-                double balance = Double.parseDouble(txtBalance.getText().trim());
-                String type = (String) cmbType.getSelectedItem();
 
-                Customer c = bank.createCustomer(first, last, email, phone);
-
-                switch (type) {
-                    case "CheckingAccount":
-                        double overdraft = Double.parseDouble(txtExtra1.getText().trim());
-                        bank.openCheckingAccount(c.getCustomerId(), balance, overdraft);
-                        break;
-                    case "SavingsAccount":
-                        double rate = Double.parseDouble(txtExtra1.getText().trim());
-                        int maxW = Integer.parseInt(txtExtra2.getText().trim());
-                        bank.openSavingsAccount(c.getCustomerId(), balance, rate, maxW);
-                        break;
-                    case "BusinessAccount":
-                        double bOverdraft = Double.parseDouble(txtExtra1.getText().trim());
-                        String company = txtExtra2.getText().trim();
-                        bank.openBusinessAccount(c.getCustomerId(), balance, bOverdraft, company, "N/A");
-                        break;
+                if (first.isEmpty() || last.isEmpty() || email.isEmpty() || phone.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "All fields are required.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
 
+                bank.createCustomer(first, last, email, phone);
                 bank.save();
                 refreshAll();
                 dialog.dispose();
-            } catch (AccountNotFoundException ex) {
-                JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Please enter valid numbers.", "Error",
-                        JOptionPane.ERROR_MESSAGE);
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        btnRow.add(btnCreate);
         btnRow.add(btnCancel);
+        btnRow.add(btnCreate);
 
         dialog.add(form, BorderLayout.CENTER);
         dialog.add(btnRow, BorderLayout.SOUTH);
