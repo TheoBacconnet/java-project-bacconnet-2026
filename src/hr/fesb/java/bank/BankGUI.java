@@ -40,10 +40,16 @@ public class BankGUI extends JFrame {
         setSize(1000, 700);
         setLocationRelativeTo(null);
 
+        JButton btnNewAccount = new JButton("New Account");
+        btnNewAccount.addActionListener(e -> showNewAccountDialog());
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        topPanel.add(btnNewAccount);
+        add(topPanel, BorderLayout.NORTH);
+
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Dashboard",    buildDashboardPanel());
-        tabbedPane.addTab("Customers",    buildCustomersPanel());
-        tabbedPane.addTab("Accounts",     buildAccountsPanel());
+        tabbedPane.addTab("Dashboard", buildDashboardPanel());
+        tabbedPane.addTab("Customers", buildCustomersPanel());
+        tabbedPane.addTab("Accounts", buildAccountsPanel());
         tabbedPane.addTab("Transactions", buildTransactionsPanel());
         add(tabbedPane, BorderLayout.CENTER);
     }
@@ -53,8 +59,8 @@ public class BankGUI extends JFrame {
         panel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
 
         lblTotalCustomers = new JLabel("", SwingConstants.CENTER);
-        lblTotalAccounts  = new JLabel("", SwingConstants.CENTER);
-        lblTotalBalance   = new JLabel("", SwingConstants.CENTER);
+        lblTotalAccounts = new JLabel("", SwingConstants.CENTER);
+        lblTotalBalance = new JLabel("", SwingConstants.CENTER);
 
         lblTotalCustomers.setFont(new Font("SansSerif", Font.BOLD, 20));
         lblTotalAccounts.setFont(new Font("SansSerif", Font.BOLD, 20));
@@ -88,13 +94,15 @@ public class BankGUI extends JFrame {
         String[] columns = { "ID", "First Name", "Last Name", "Email", "Phone", "Accounts", "Total Balance" };
         customerTableModel = new DefaultTableModel(columns, 0) {
             @Override
-            public boolean isCellEditable(int row, int col) { return false; }
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
         };
         customerTable = new JTable(customerTableModel);
         customerTable.setRowHeight(24);
         customerTable.getTableHeader().setReorderingAllowed(false);
 
-        panel.add(searchBar,                      BorderLayout.NORTH);
+        panel.add(searchBar, BorderLayout.NORTH);
         panel.add(new JScrollPane(customerTable), BorderLayout.CENTER);
         return panel;
     }
@@ -106,7 +114,7 @@ public class BankGUI extends JFrame {
         JPanel filterBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
         filterBar.add(new JLabel("Type:"));
         cmbTypeFilter = new JComboBox<>(
-                new String[]{ "All", "CheckingAccount", "SavingsAccount", "BusinessAccount" });
+                new String[] { "All", "CheckingAccount", "SavingsAccount", "BusinessAccount" });
         filterBar.add(cmbTypeFilter);
 
         filterBar.add(new JLabel("Min Balance:"));
@@ -133,13 +141,15 @@ public class BankGUI extends JFrame {
         String[] columns = { "Account ID", "Customer", "Type", "Balance", "Status" };
         accountTableModel = new DefaultTableModel(columns, 0) {
             @Override
-            public boolean isCellEditable(int row, int col) { return false; }
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
         };
         accountTable = new JTable(accountTableModel);
         accountTable.setRowHeight(24);
         accountTable.getTableHeader().setReorderingAllowed(false);
 
-        panel.add(filterBar,                     BorderLayout.NORTH);
+        panel.add(filterBar, BorderLayout.NORTH);
         panel.add(new JScrollPane(accountTable), BorderLayout.CENTER);
         return panel;
     }
@@ -158,17 +168,18 @@ public class BankGUI extends JFrame {
         String[] columns = { "Date / Time", "Type", "Amount", "Balance After" };
         txTableModel = new DefaultTableModel(columns, 0) {
             @Override
-            public boolean isCellEditable(int row, int col) { return false; }
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
         };
         txTable = new JTable(txTableModel);
         txTable.setRowHeight(24);
         txTable.getTableHeader().setReorderingAllowed(false);
 
-        panel.add(topBar,                   BorderLayout.NORTH);
+        panel.add(topBar, BorderLayout.NORTH);
         panel.add(new JScrollPane(txTable), BorderLayout.CENTER);
         return panel;
     }
-
 
     private void refreshAll() {
         refreshDashboard();
@@ -180,14 +191,14 @@ public class BankGUI extends JFrame {
 
     private void refreshDashboard() {
         lblTotalCustomers.setText("Total Customers: " + bank.getTotalCustomerCount());
-        lblTotalAccounts.setText("Total Accounts: "   + bank.getTotalAccountCount());
+        lblTotalAccounts.setText("Total Accounts: " + bank.getTotalAccountCount());
         lblTotalBalance.setText(String.format("Total Balance: %.2f EUR", bank.getTotalBalance()));
     }
 
     private void refreshCustomerTable() {
         customerTableModel.setRowCount(0);
         for (Customer c : bank.getAllCustomers()) {
-            customerTableModel.addRow(new Object[]{
+            customerTableModel.addRow(new Object[] {
                     c.getCustomerId(),
                     c.getFirstName(),
                     c.getLastName(),
@@ -201,12 +212,15 @@ public class BankGUI extends JFrame {
 
     private void filterCustomers() {
         String query = txtCustomerSearch.getText().trim();
-        if (query.isEmpty()) { refreshCustomerTable(); return; }
+        if (query.isEmpty()) {
+            refreshCustomerTable();
+            return;
+        }
         customerTableModel.setRowCount(0);
         for (Customer c : bank.getAllCustomers()) {
             if (c.getFullName().toLowerCase().contains(query.toLowerCase())
                     || c.getEmail().toLowerCase().contains(query.toLowerCase())) {
-                customerTableModel.addRow(new Object[]{
+                customerTableModel.addRow(new Object[] {
                         c.getCustomerId(),
                         c.getFirstName(),
                         c.getLastName(),
@@ -222,7 +236,7 @@ public class BankGUI extends JFrame {
     private void refreshAccountTable() {
         accountTableModel.setRowCount(0);
         for (Account a : bank.getAllAccounts()) {
-            accountTableModel.addRow(new Object[]{
+            accountTableModel.addRow(new Object[] {
                     a.getAccountId(),
                     getCustomerName(a.getCustomerId()),
                     a.getAccountType(),
@@ -238,13 +252,16 @@ public class BankGUI extends JFrame {
         String maxS = txtMaxBalance.getText().trim();
 
         List<Account> list = new ArrayList<>(bank.getAllAccounts());
-        if (!"All".equals(type)) list = bank.filterByType(type);
+        if (!"All".equals(type))
+            list = bank.filterByType(type);
 
         accountTableModel.setRowCount(0);
         for (Account a : list) {
-            if (!minS.isEmpty() && a.getBalance() < Double.parseDouble(minS)) continue;
-            if (!maxS.isEmpty() && a.getBalance() > Double.parseDouble(maxS)) continue;
-            accountTableModel.addRow(new Object[]{
+            if (!minS.isEmpty() && a.getBalance() < Double.parseDouble(minS))
+                continue;
+            if (!maxS.isEmpty() && a.getBalance() > Double.parseDouble(maxS))
+                continue;
+            accountTableModel.addRow(new Object[] {
                     a.getAccountId(),
                     getCustomerName(a.getCustomerId()),
                     a.getAccountType(),
@@ -269,12 +286,13 @@ public class BankGUI extends JFrame {
     private void loadTransactions() {
         txTableModel.setRowCount(0);
         String selected = (String) cmbTxAccount.getSelectedItem();
-        if (selected == null) return;
+        if (selected == null)
+            return;
         String accId = selected.split(" — ")[0];
         try {
             Account a = bank.findAccount(accId);
             for (Transaction t : a.getTransactions()) {
-                txTableModel.addRow(new Object[]{
+                txTableModel.addRow(new Object[] {
                         t.getFormattedDateTime(),
                         t.getType(),
                         String.format("%.2f EUR", t.getAmount()),
@@ -293,4 +311,92 @@ public class BankGUI extends JFrame {
             return "";
         }
     }
+
+    private void showNewAccountDialog() {
+        JDialog dialog = new JDialog(this, "New Customer & Account", true);
+        dialog.setSize(400, 320);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout(10, 10));
+
+        JPanel form = new JPanel(new GridLayout(8, 2, 8, 8));
+        form.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        JTextField txtFirst = new JTextField();
+        JTextField txtLast = new JTextField();
+        JTextField txtEmail = new JTextField();
+        JTextField txtPhone = new JTextField();
+        JTextField txtBalance = new JTextField();
+        JComboBox<String> cmbType = new JComboBox<>(
+                new String[] { "CheckingAccount", "SavingsAccount", "BusinessAccount" });
+        JTextField txtExtra1 = new JTextField();
+        JTextField txtExtra2 = new JTextField();
+
+        form.add(new JLabel("First Name:"));
+        form.add(txtFirst);
+        form.add(new JLabel("Last Name:"));
+        form.add(txtLast);
+        form.add(new JLabel("Email:"));
+        form.add(txtEmail);
+        form.add(new JLabel("Phone:"));
+        form.add(txtPhone);
+        form.add(new JLabel("Account Type:"));
+        form.add(cmbType);
+        form.add(new JLabel("Initial Balance:"));
+        form.add(txtBalance);
+        form.add(new JLabel("Extra field 1:"));
+        form.add(txtExtra1);
+        form.add(new JLabel("Extra field 2:"));
+        form.add(txtExtra2);
+
+        JButton btnCreate = new JButton("Create");
+        JButton btnCancel = new JButton("Cancel");
+        btnCancel.addActionListener(e -> dialog.dispose());
+        btnCreate.addActionListener(e -> {
+            try {
+                String first = txtFirst.getText().trim();
+                String last = txtLast.getText().trim();
+                String email = txtEmail.getText().trim();
+                String phone = txtPhone.getText().trim();
+                double balance = Double.parseDouble(txtBalance.getText().trim());
+                String type = (String) cmbType.getSelectedItem();
+
+                Customer c = bank.createCustomer(first, last, email, phone);
+
+                switch (type) {
+                    case "CheckingAccount":
+                        double overdraft = Double.parseDouble(txtExtra1.getText().trim());
+                        bank.openCheckingAccount(c.getCustomerId(), balance, overdraft);
+                        break;
+                    case "SavingsAccount":
+                        double rate = Double.parseDouble(txtExtra1.getText().trim());
+                        int maxW = Integer.parseInt(txtExtra2.getText().trim());
+                        bank.openSavingsAccount(c.getCustomerId(), balance, rate, maxW);
+                        break;
+                    case "BusinessAccount":
+                        double bOverdraft = Double.parseDouble(txtExtra1.getText().trim());
+                        String company = txtExtra2.getText().trim();
+                        bank.openBusinessAccount(c.getCustomerId(), balance, bOverdraft, company, "N/A");
+                        break;
+                }
+
+                bank.save();
+                refreshAll();
+                dialog.dispose();
+            } catch (AccountNotFoundException ex) {
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "Please enter valid numbers.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnRow.add(btnCreate);
+        btnRow.add(btnCancel);
+
+        dialog.add(form, BorderLayout.CENTER);
+        dialog.add(btnRow, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
+
 }
