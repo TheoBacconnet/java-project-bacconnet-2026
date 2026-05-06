@@ -44,9 +44,20 @@ public class BankGUI extends JFrame {
         btnNewCustomer.addActionListener(e -> showNewCustomerDialog());
         JButton btnNewAccount = new JButton("New Account");
         btnNewAccount.addActionListener(e -> showNewAccountDialog());
+
+        JButton btnDeposit = new JButton("Deposit");
+        btnDeposit.addActionListener(e -> showDepositDialog());
+        JButton btnWithdraw = new JButton("Withdraw");
+        //btnWithdraw.addActionListener(e -> showWithdrawDialog());
+        JButton btnTransfer = new JButton("Transfer");
+        //btnTransfer.addActionListener(e -> showTransferDialog());
+
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         topPanel.add(btnNewCustomer);
         topPanel.add(btnNewAccount);
+        topPanel.add(btnDeposit);
+        topPanel.add(btnWithdraw);
+        topPanel.add(btnTransfer);
         add(topPanel, BorderLayout.NORTH);
 
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -574,6 +585,71 @@ public class BankGUI extends JFrame {
             JOptionPane.showMessageDialog(this, e.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private JComboBox<String> buildAccountCombo(){
+        JComboBox<String> combo = new JComboBox<>();
+        for (Account a : bank.getAllAccounts()){
+            combo.addItem(a.getAccountId() + "-" + getCustomerName((a.getCustomerId())));
+        }
+        return combo;
+    }
+
+    private Account getAccountFromCombo(JComboBox<String> combo) throws AccountNotFoundException {
+        String selected = (String) combo.getSelectedItem();
+        if (selected == null)
+            throw new AccountNotFoundException("No account selected.");
+        String accId = selected.split("-")[0];
+        return bank.findAccount(accId);
+    }
+
+    private void showDepositDialog(){
+        JDialog dialog = new JDialog(this, "Deposit", true);
+        dialog.setSize(350,160);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout(10,10));
+
+        JPanel form = new JPanel(new GridLayout(2,2,8,8));
+        form.setBorder(BorderFactory.createEmptyBorder(15,15,5,15));
+
+        JComboBox<String> cmbAccount = buildAccountCombo();
+        JTextField txtAmount = new JTextField();
+
+        form.add(new JLabel("Account:"));
+        form.add(cmbAccount);
+        form.add(new JLabel("Amount:"));
+        form.add(txtAmount);
+
+        JButton btnOk = new JButton("Deposit");
+        JButton btnCancel = new JButton("Cancel");
+        btnCancel.addActionListener(e -> dialog.dispose());
+        btnOk.addActionListener(e -> {
+            try {
+                Account a = getAccountFromCombo(cmbAccount);
+                double amount = Double.parseDouble(txtAmount.getText().trim());
+                bank.deposit(a,amount);
+                bank.save();
+                refreshAll();
+                dialog.dispose();
+            } catch (AccountNotFoundException ex) {
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "Please enter a valid amount.",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnRow.add(btnCancel);
+        btnRow.add(btnOk);
+
+        dialog.add(form, BorderLayout.CENTER);
+        dialog.add(btnRow, BorderLayout.SOUTH);
+        dialog.setVisible(true);
     }
 
 }
