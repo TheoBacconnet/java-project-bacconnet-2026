@@ -105,6 +105,15 @@ public class BankGUI extends JFrame {
         customerTable.setRowHeight(24);
         customerTable.getTableHeader().setReorderingAllowed(false);
 
+        customerTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    showCustomerAccounts();
+                }
+            }
+        });
+
         panel.add(searchBar, BorderLayout.NORTH);
         panel.add(new JScrollPane(customerTable), BorderLayout.CENTER);
         return panel;
@@ -504,6 +513,67 @@ public class BankGUI extends JFrame {
         dialog.add(form, BorderLayout.CENTER);
         dialog.add(btnRow, BorderLayout.SOUTH);
         dialog.setVisible(true);
+    }
+
+    private void showCustomerAccounts() {
+        int selectedRow = customerTable.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Please select a customer first.",
+                    "No selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String customerId = (String) customerTableModel.getValueAt(selectedRow, 0);
+
+        try {
+            Customer c = bank.findCustomer(customerId);
+
+            if (c.getAccounts().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "This customer has no accounts.",
+                        "Accounts", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            // construire le dialog
+            JDialog dialog = new JDialog(this, "Accounts — " + c.getFullName(), true);
+            dialog.setSize(550, 250);
+            dialog.setLocationRelativeTo(this);
+            dialog.setLayout(new BorderLayout(10, 10));
+
+            String[] columns = { "Account ID", "Type", "Balance", "Status" };
+            DefaultTableModel model = new DefaultTableModel(columns, 0) {
+                @Override
+                public boolean isCellEditable(int row, int col) {
+                    return false;
+                }
+            };
+
+            for (Account a : c.getAccounts()) {
+                model.addRow(new Object[] {
+                        a.getAccountId(),
+                        a.getAccountType(),
+                        String.format("%.2f EUR", a.getBalance()),
+                        a.isActive() ? "ACTIVE" : "CLOSED"
+                });
+            }
+
+            JTable table = new JTable(model);
+            table.setRowHeight(24);
+            table.getTableHeader().setReorderingAllowed(false);
+
+            JButton btnClose = new JButton("Close");
+            btnClose.addActionListener(e -> dialog.dispose());
+            JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            btnRow.add(btnClose);
+
+            dialog.add(new JScrollPane(table), BorderLayout.CENTER);
+            dialog.add(btnRow, BorderLayout.SOUTH);
+            dialog.setVisible(true);
+
+        } catch (AccountNotFoundException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
 }
