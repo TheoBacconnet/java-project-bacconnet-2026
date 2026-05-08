@@ -48,9 +48,9 @@ public class BankGUI extends JFrame {
         JButton btnDeposit = new JButton("Deposit");
         btnDeposit.addActionListener(e -> showDepositDialog());
         JButton btnWithdraw = new JButton("Withdraw");
-        //btnWithdraw.addActionListener(e -> showWithdrawDialog());
+        btnWithdraw.addActionListener(e -> showWithdrawDialog());
         JButton btnTransfer = new JButton("Transfer");
-        //btnTransfer.addActionListener(e -> showTransferDialog());
+        // btnTransfer.addActionListener(e -> showTransferDialog());
 
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         topPanel.add(btnNewCustomer);
@@ -587,9 +587,9 @@ public class BankGUI extends JFrame {
         }
     }
 
-    private JComboBox<String> buildAccountCombo(){
+    private JComboBox<String> buildAccountCombo() {
         JComboBox<String> combo = new JComboBox<>();
-        for (Account a : bank.getAllAccounts()){
+        for (Account a : bank.getAllAccounts()) {
             combo.addItem(a.getAccountId() + "-" + getCustomerName((a.getCustomerId())));
         }
         return combo;
@@ -603,14 +603,14 @@ public class BankGUI extends JFrame {
         return bank.findAccount(accId);
     }
 
-    private void showDepositDialog(){
+    private void showDepositDialog() {
         JDialog dialog = new JDialog(this, "Deposit", true);
-        dialog.setSize(350,160);
+        dialog.setSize(350, 160);
         dialog.setLocationRelativeTo(this);
-        dialog.setLayout(new BorderLayout(10,10));
+        dialog.setLayout(new BorderLayout(10, 10));
 
-        JPanel form = new JPanel(new GridLayout(2,2,8,8));
-        form.setBorder(BorderFactory.createEmptyBorder(15,15,5,15));
+        JPanel form = new JPanel(new GridLayout(2, 2, 8, 8));
+        form.setBorder(BorderFactory.createEmptyBorder(15, 15, 5, 15));
 
         JComboBox<String> cmbAccount = buildAccountCombo();
         JTextField txtAmount = new JTextField();
@@ -627,11 +627,61 @@ public class BankGUI extends JFrame {
             try {
                 Account a = getAccountFromCombo(cmbAccount);
                 double amount = Double.parseDouble(txtAmount.getText().trim());
-                bank.deposit(a,amount);
+                bank.deposit(a, amount);
                 bank.save();
                 refreshAll();
                 dialog.dispose();
             } catch (AccountNotFoundException ex) {
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "Please enter a valid amount.",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnRow.add(btnCancel);
+        btnRow.add(btnOk);
+
+        dialog.add(form, BorderLayout.CENTER);
+        dialog.add(btnRow, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
+
+    private void showWithdrawDialog() {
+        JDialog dialog = new JDialog(this, "Withdraw", true);
+        dialog.setSize(350, 160);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout(10, 10));
+
+        JPanel form = new JPanel(new GridLayout(2, 2, 8, 8));
+        form.setBorder(BorderFactory.createEmptyBorder(15, 15, 5, 15));
+
+        JComboBox<String> cmbAccount = buildAccountCombo();
+        JTextField txtAmount = new JTextField();
+
+        form.add(new JLabel("Account:"));
+        form.add(cmbAccount);
+        form.add(new JLabel("Amount:"));
+        form.add(txtAmount);
+
+        JButton btnOk = new JButton("Withdraw");
+        JButton btnCancel = new JButton("Cancel");
+        btnCancel.addActionListener(e -> dialog.dispose());
+
+        btnOk.addActionListener(e -> {
+            try {
+                Account a = getAccountFromCombo(cmbAccount);
+                double amt = Double.parseDouble(txtAmount.getText().trim());
+                bank.withdraw(a, amt);
+                bank.save();
+                refreshAll();
+                dialog.dispose();
+            } catch (AccountNotFoundException | InsufficientFundsException ex) {
                 JOptionPane.showMessageDialog(dialog, ex.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
             } catch (NumberFormatException ex) {
