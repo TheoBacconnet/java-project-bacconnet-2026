@@ -50,7 +50,7 @@ public class BankGUI extends JFrame {
         JButton btnWithdraw = new JButton("Withdraw");
         btnWithdraw.addActionListener(e -> showWithdrawDialog());
         JButton btnTransfer = new JButton("Transfer");
-        // btnTransfer.addActionListener(e -> showTransferDialog());
+        btnTransfer.addActionListener(e -> showTransferDialog());
 
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         topPanel.add(btnNewCustomer);
@@ -689,6 +689,57 @@ public class BankGUI extends JFrame {
                         "Error", JOptionPane.ERROR_MESSAGE);
             } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(dialog, ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnRow.add(btnCancel);
+        btnRow.add(btnOk);
+
+        dialog.add(form, BorderLayout.CENTER);
+        dialog.add(btnRow, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
+
+    private void showTransferDialog() {
+        JDialog dialog = new JDialog(this, "Transfer", true);
+        dialog.setSize(350, 200);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout(10, 10));
+
+        JPanel form = new JPanel(new GridLayout(3, 2, 8, 8));
+        form.setBorder(BorderFactory.createEmptyBorder(15, 15, 5, 15));
+
+        JComboBox<String> cmbFrom = buildAccountCombo();
+        JComboBox<String> cmbTo = buildAccountCombo();
+        JTextField txtAmount = new JTextField();
+
+        form.add(new JLabel("From:"));
+        form.add(cmbFrom);
+        form.add(new JLabel("To:"));
+        form.add(cmbTo);
+        form.add(new JLabel("Amount:"));
+        form.add(txtAmount);
+
+        JButton btnOk = new JButton("Transfer");
+        JButton btnCancel = new JButton("Cancel");
+        btnCancel.addActionListener(e -> dialog.dispose());
+
+        btnOk.addActionListener(e -> {
+            try {
+                Account from = getAccountFromCombo(cmbFrom);
+                Account to = getAccountFromCombo(cmbTo);
+                double amt = Double.parseDouble(txtAmount.getText().trim());
+                bank.transfer(from, to, amt);
+                bank.save();
+                refreshAll();
+                dialog.dispose();
+            } catch (AccountNotFoundException | InsufficientFundsException ex) {
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "Please enter a valid amount.",
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
