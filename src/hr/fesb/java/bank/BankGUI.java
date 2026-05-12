@@ -66,6 +66,8 @@ public class BankGUI extends JFrame {
         tabbedPane.addTab("Accounts", buildAccountsPanel());
         tabbedPane.addTab("Transactions", buildTransactionsPanel());
         add(tabbedPane, BorderLayout.CENTER);
+
+        setJMenuBar(buildMenuBar());
     }
 
     private JPanel buildDashboardPanel() {
@@ -751,6 +753,64 @@ public class BankGUI extends JFrame {
         dialog.add(form, BorderLayout.CENTER);
         dialog.add(btnRow, BorderLayout.SOUTH);
         dialog.setVisible(true);
+    }
+
+    private JMenuBar buildMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu fileMenu = new JMenu("File");
+
+        JMenuItem itemSave = new JMenuItem("Save");
+        itemSave.addActionListener(e -> {
+            bank.save();
+            JOptionPane.showMessageDialog(this, "Data saved successfully.",
+                    "Save", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        JMenuItem itemApplyMonthly = new JMenuItem("Apply Monthly Rules");
+        itemApplyMonthly.addActionListener(e -> {
+            bank.applyMonthlyRules();
+            bank.save();
+            refreshAll();
+            JOptionPane.showMessageDialog(this, "Monthly rules applied.",
+                    "Monthly Rules", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        JMenuItem itemExit = new JMenuItem("Exit");
+        itemExit.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Save before exiting?", "Exit",
+                    JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (confirm == JOptionPane.YES_OPTION) {
+                bank.save();
+                System.exit(0);
+            } else if (confirm == JOptionPane.NO_OPTION) {
+                System.exit(0);
+            }
+        });
+
+        fileMenu.add(itemSave);
+        fileMenu.add(itemApplyMonthly);
+        fileMenu.addSeparator();
+        fileMenu.add(itemExit);
+
+        JMenu helpMenu = new JMenu("Help");
+
+        JMenuItem itemAbout = new JMenuItem("About");
+        itemAbout.addActionListener(e -> JOptionPane.showMessageDialog(this,
+                "Bank Account Management System\n" +
+                        "Student: Theo Emmanuel Bernard Bacconnet\n" +
+                        "Course: Programming in Java (FELP11)\n" +
+                        "University of Split - FESB\n" +
+                        "Academic Year 2025/2026",
+                "About", JOptionPane.INFORMATION_MESSAGE));
+
+        helpMenu.add(itemAbout);
+
+        menuBar.add(fileMenu);
+        menuBar.add(helpMenu);
+
+        return menuBar;
     }
 
 }
