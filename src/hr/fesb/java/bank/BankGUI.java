@@ -163,6 +163,21 @@ public class BankGUI extends JFrame {
         });
         filterBar.add(btnReset);
 
+        JButton btnSort = new JButton("Sort by Balance");
+        btnSort.addActionListener(e -> {
+            accountTableModel.setRowCount(0);
+            for (Account a : bank.getAccountsSortedByBalance()) {
+                accountTableModel.addRow(new Object[] {
+                        a.getAccountId(),
+                        getCustomerName(a.getCustomerId()),
+                        a.getAccountType(),
+                        String.format("%.2f EUR", a.getBalance()),
+                        a.isActive() ? "ACTIVE" : "CLOSED"
+                });
+            }
+        });
+        filterBar.add(btnSort);
+
         String[] columns = { "Account ID", "Customer", "Type", "Balance", "Status" };
         accountTableModel = new DefaultTableModel(columns, 0) {
             @Override
@@ -222,7 +237,7 @@ public class BankGUI extends JFrame {
 
     private void refreshCustomerTable() {
         customerTableModel.setRowCount(0);
-        for (Customer c : bank.getAllCustomers()) {
+        for (Customer c : bank.getCustomersSortedByName()) {
             customerTableModel.addRow(new Object[] {
                     c.getCustomerId(),
                     c.getFirstName(),
@@ -242,7 +257,7 @@ public class BankGUI extends JFrame {
             return;
         }
         customerTableModel.setRowCount(0);
-        for (Customer c : bank.getAllCustomers()) {
+        for (Customer c : bank.getCustomersSortedByName()) {
             if (c.getFullName().toLowerCase().contains(query.toLowerCase())
                     || c.getEmail().toLowerCase().contains(query.toLowerCase())) {
                 customerTableModel.addRow(new Object[] {

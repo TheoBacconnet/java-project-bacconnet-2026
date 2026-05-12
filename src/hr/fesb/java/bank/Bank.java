@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class Bank {
     private Map<String, Customer> customers;
@@ -177,5 +179,27 @@ public class Bank {
                     accountCounter = accIdNum;
             }
         }
+    }
+
+    public List<Customer> getCustomersSortedByName(){
+        List<Customer> sorted = new ArrayList<>(customers.values());
+        Collections.sort(sorted, new Comparator<Customer>(){
+            @Override
+            public int compare(Customer c1, Customer c2){
+                return c1.getLastName().compareToIgnoreCase(c2.getLastName());
+            }
+        });
+        return sorted;
+    }
+
+    public List<Account> getAccountsSortedByBalance(){
+        List<Account> sorted = new ArrayList<>(accounts.values());
+        Collections.sort(sorted, new Comparator<Account>(){
+            @Override
+            public int compare(Account a1, Account a2){
+                return Double.compare(a2.getBalance(), a1.getBalance());
+            }
+        });
+        return sorted;
     }
 }
