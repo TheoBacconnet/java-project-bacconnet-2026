@@ -4,6 +4,8 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class BankGUI extends JFrame {
@@ -204,6 +206,14 @@ public class BankGUI extends JFrame {
         cmbTxAccount.setPreferredSize(new Dimension(250, 25));
         cmbTxAccount.addActionListener(e -> loadTransactions());
         topBar.add(cmbTxAccount);
+
+        JButton btnSortDate = new JButton("Sort by Date ↑");
+        btnSortDate.addActionListener(e -> sortTransactions("date"));
+        topBar.add(btnSortDate);
+
+        JButton btnSortAmount = new JButton("Sort by Amount ↓");
+        btnSortAmount.addActionListener(e -> sortTransactions("amount"));
+        topBar.add(btnSortAmount);
 
         String[] columns = { "Date / Time", "Type", "Amount", "Balance After" };
         txTableModel = new DefaultTableModel(columns, 0) {
@@ -826,6 +836,47 @@ public class BankGUI extends JFrame {
         menuBar.add(helpMenu);
 
         return menuBar;
+    }
+
+    private void sortTransactions(String criteria) {
+        String selected = (String) cmbTxAccount.getSelectedItem();
+        if (selected == null)
+            return;
+        String accId = selected.split(" — ")[0];
+
+        try {
+            Account a = bank.findAccount(accId);
+            List<Transaction> list = new ArrayList<>(a.getTransactions());
+
+            if (criteria.equals("date")) {
+                Collections.sort(list, new Comparator<Transaction>() {
+                    @Override
+                    public int compare(Transaction t1, Transaction t2) {
+                        return t1.getDateTime().compareTo(t2.getDateTime());
+                    }
+                });
+            } else if (criteria.equals("amount")) {
+                Collections.sort(list, new Comparator<Transaction>() {
+                    @Override
+                    public int compare(Transaction t1, Transaction t2) {
+                        return Double.compare(t2.getAmount(), t1.getAmount());
+                    }
+                });
+            }
+
+            txTableModel.setRowCount(0);
+            for (Transaction t : list) {
+                txTableModel.addRow(new Object[] {
+                        t.getFormattedDateTime(),
+                        t.getType(),
+                        String.format("%.2f EUR", t.getAmount()),
+                        String.format("%.2f EUR", t.getBalanceAfter())
+                });
+            }
+
+        } catch (AccountNotFoundException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
 }
