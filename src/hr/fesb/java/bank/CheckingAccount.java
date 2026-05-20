@@ -12,12 +12,12 @@ public class CheckingAccount extends Account {
 
     @Override
     public void withdraw(double amount) throws InsufficientFundsException {
-        if (amount <= 0) {
+        if (amount <= 0)
             throw new IllegalArgumentException("Withdrawal amount must be positive.");
-        }
-        if (getBalance() - amount < overdraftLimit) {
+        if (!isActive())
+            throw new IllegalStateException("Cannot withdraw from an inactive account.");
+        if (getBalance() - amount < overdraftLimit)
             throw new InsufficientFundsException(amount, getBalance() - overdraftLimit);
-        }
         setBalance(getBalance() - amount);
         getTransactions().add(new Transaction(LocalDateTime.now(), Transaction.Type.WITHDRAWAL, amount, getBalance()));
     }

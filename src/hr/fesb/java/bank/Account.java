@@ -52,6 +52,8 @@ public abstract class Account implements Transactable, Reportable {
     public void deposit(double amount) {
         if (amount <= 0)
             throw new IllegalArgumentException("Deposit amount must be positive.");
+        if (!active)
+            throw new IllegalStateException("Cannot deposit into an inactive account.");
         balance += amount;
         transactions.add(new Transaction(LocalDateTime.now(), Transaction.Type.DEPOSIT, amount, balance));
     }

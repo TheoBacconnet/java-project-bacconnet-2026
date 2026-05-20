@@ -53,6 +53,8 @@ public class BankGUI extends JFrame {
         btnWithdraw.addActionListener(e -> showWithdrawDialog());
         JButton btnTransfer = new JButton("Transfer");
         btnTransfer.addActionListener(e -> showTransferDialog());
+        JButton btnClose = new JButton("Close Account");
+        btnClose.addActionListener(e -> showCloseAccountDialog());
 
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         topPanel.add(btnNewCustomer);
@@ -60,6 +62,7 @@ public class BankGUI extends JFrame {
         topPanel.add(btnDeposit);
         topPanel.add(btnWithdraw);
         topPanel.add(btnTransfer);
+        topPanel.add(btnClose);
         add(topPanel, BorderLayout.NORTH);
 
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -301,23 +304,28 @@ public class BankGUI extends JFrame {
         String minS = txtMinBalance.getText().trim();
         String maxS = txtMaxBalance.getText().trim();
 
-        List<Account> list = new ArrayList<>(bank.getAllAccounts());
-        if (!"All".equals(type))
-            list = bank.filterByType(type);
+        try {
+            List<Account> list = new ArrayList<>(bank.getAllAccounts());
+            if (!"All".equals(type))
+                list = bank.filterByType(type);
 
-        accountTableModel.setRowCount(0);
-        for (Account a : list) {
-            if (!minS.isEmpty() && a.getBalance() < Double.parseDouble(minS))
-                continue;
-            if (!maxS.isEmpty() && a.getBalance() > Double.parseDouble(maxS))
-                continue;
-            accountTableModel.addRow(new Object[] {
-                    a.getAccountId(),
-                    getCustomerName(a.getCustomerId()),
-                    a.getAccountType(),
-                    String.format("%.2f EUR", a.getBalance()),
-                    a.isActive() ? "ACTIVE" : "CLOSED"
-            });
+            accountTableModel.setRowCount(0);
+            for (Account a : list) {
+                if (!minS.isEmpty() && a.getBalance() < Double.parseDouble(minS))
+                    continue;
+                if (!maxS.isEmpty() && a.getBalance() > Double.parseDouble(maxS))
+                    continue;
+                accountTableModel.addRow(new Object[] {
+                        a.getAccountId(),
+                        getCustomerName(a.getCustomerId()),
+                        a.getAccountType(),
+                        String.format("%.2f EUR", a.getBalance()),
+                        a.isActive() ? "ACTIVE" : "CLOSED"
+                });
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Please enter valid numbers for balance range.\nPress 'Reset'",
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -363,6 +371,12 @@ public class BankGUI extends JFrame {
     }
 
     private void showNewAccountDialog() {
+        if (bank.getAllCustomers().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please create a customer first.",
+                    "No customers", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         JDialog dialog = new JDialog(this, "New Account", true);
         dialog.setSize(380, 300);
         dialog.setLocationRelativeTo(this);
@@ -387,29 +401,33 @@ public class BankGUI extends JFrame {
         fixedForm.add(new JLabel("Initial Balance:"));
         fixedForm.add(txtBalance);
 
+        JTextField txtOverdraft = new JTextField();
+        JTextField txtRate = new JTextField();
+        JTextField txtMaxW = new JTextField();
+        JTextField txtOverdraftB = new JTextField();
+        JTextField txtCompany = new JTextField();
+        JTextField txtVat = new JTextField();
+
         JPanel checkingPanel = new JPanel(new GridLayout(1, 2, 8, 8));
         checkingPanel.setBorder(BorderFactory.createEmptyBorder(0, 15, 5, 15));
-        JTextField txtOverdraft = new JTextField();
-        checkingPanel.add(new JLabel("Overdraft Limit (EUR):"));
+        checkingPanel.add(new JLabel("Overdraft Limit (e.g. -200):"));
         checkingPanel.add(txtOverdraft);
 
         JPanel savingsPanel = new JPanel(new GridLayout(2, 2, 8, 8));
         savingsPanel.setBorder(BorderFactory.createEmptyBorder(0, 15, 5, 15));
-        JTextField txtRate = new JTextField();
-        JTextField txtMaxW = new JTextField();
-        savingsPanel.add(new JLabel("Monthly Interest Rate:"));
+        savingsPanel.add(new JLabel("Interest Rate (e.g. 0.05):"));
         savingsPanel.add(txtRate);
         savingsPanel.add(new JLabel("Max Withdrawals/Month:"));
         savingsPanel.add(txtMaxW);
 
-        JPanel businessPanel = new JPanel(new GridLayout(2, 2, 8, 8));
+        JPanel businessPanel = new JPanel(new GridLayout(3, 2, 8, 8));
         businessPanel.setBorder(BorderFactory.createEmptyBorder(0, 15, 5, 15));
-        JTextField txtOverdraftB = new JTextField();
-        JTextField txtCompany = new JTextField();
-        businessPanel.add(new JLabel("Overdraft Limit (EUR):"));
+        businessPanel.add(new JLabel("Overdraft Limit (e.g. -5000):"));
         businessPanel.add(txtOverdraftB);
         businessPanel.add(new JLabel("Company Name:"));
         businessPanel.add(txtCompany);
+        businessPanel.add(new JLabel("VAT Number:"));
+        businessPanel.add(txtVat);
 
         JPanel extraPanel = new JPanel(new BorderLayout());
         extraPanel.add(checkingPanel, BorderLayout.CENTER);
@@ -427,7 +445,7 @@ public class BankGUI extends JFrame {
                     break;
                 case "BusinessAccount":
                     extraPanel.add(businessPanel, BorderLayout.CENTER);
-                    dialog.setSize(380, 330);
+                    dialog.setSize(380, 360);
                     break;
             }
             extraPanel.revalidate();
@@ -441,29 +459,69 @@ public class BankGUI extends JFrame {
         btnCreate.addActionListener(e -> {
             try {
                 String selected = (String) cmbCustomer.getSelectedItem();
-                if (selected == null) {
-                    JOptionPane.showMessageDialog(dialog, "Please select a customer.",
+                String custId = selected.split(" — ")[0];
+                double balance = Double.parseDouble(txtBalance.getText().trim());
+                String type = (String) cmbType.getSelectedItem();
+
+                if (balance < 0) {
+                    JOptionPane.showMessageDialog(dialog, "Initial balance cannot be negative.",
                             "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                String customerId = selected.split(" — ")[0];
-                double balance = Double.parseDouble(txtBalance.getText().trim());
-                String type = (String) cmbType.getSelectedItem();
 
                 switch (type) {
                     case "CheckingAccount":
                         double overdraft = Double.parseDouble(txtOverdraft.getText().trim());
-                        bank.openCheckingAccount(customerId, balance, overdraft);
+                        if (overdraft > 0) {
+                            JOptionPane.showMessageDialog(dialog,
+                                    "Overdraft limit must be negative (e.g. -200).",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        bank.openCheckingAccount(custId, balance, overdraft);
                         break;
+
                     case "SavingsAccount":
                         double rate = Double.parseDouble(txtRate.getText().trim());
                         int maxW = Integer.parseInt(txtMaxW.getText().trim());
-                        bank.openSavingsAccount(customerId, balance, rate, maxW);
+                        if (rate <= 0 || rate >= 1) {
+                            JOptionPane.showMessageDialog(dialog,
+                                    "Interest rate must be between 0 and 1 (e.g. 0.05 for 5%).",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        if (maxW <= 0) {
+                            JOptionPane.showMessageDialog(dialog,
+                                    "Max withdrawals must be greater than 0.",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        bank.openSavingsAccount(custId, balance, rate, maxW);
                         break;
+
                     case "BusinessAccount":
                         double bOverdraft = Double.parseDouble(txtOverdraftB.getText().trim());
                         String company = txtCompany.getText().trim();
-                        bank.openBusinessAccount(customerId, balance, bOverdraft, company, "N/A");
+                        String vat = txtVat.getText().trim();
+                        if (bOverdraft >= 0) {
+                            JOptionPane.showMessageDialog(dialog,
+                                    "Overdraft limit must be negative (e.g. -5000).",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        if (company.isEmpty()) {
+                            JOptionPane.showMessageDialog(dialog,
+                                    "Company name cannot be empty.",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        if (vat.isEmpty()) {
+                            JOptionPane.showMessageDialog(dialog,
+                                    "VAT number cannot be empty.",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        bank.openBusinessAccount(custId, balance, bOverdraft, company, vat);
                         break;
                 }
 
@@ -572,7 +630,6 @@ public class BankGUI extends JFrame {
                 return;
             }
 
-            // construire le dialog
             JDialog dialog = new JDialog(this, "Accounts — " + c.getFullName(), true);
             dialog.setSize(550, 250);
             dialog.setLocationRelativeTo(this);
@@ -667,6 +724,9 @@ public class BankGUI extends JFrame {
             } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(dialog, ex.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (IllegalStateException ex) {
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -717,6 +777,9 @@ public class BankGUI extends JFrame {
             } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(dialog, ex.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (IllegalStateException ex) {
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -757,16 +820,35 @@ public class BankGUI extends JFrame {
             try {
                 Account from = getAccountFromCombo(cmbFrom);
                 Account to = getAccountFromCombo(cmbTo);
+
+                if (from.getAccountId().equals(to.getAccountId())) {
+                    JOptionPane.showMessageDialog(dialog,
+                            "Source and destination accounts must be different.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 double amt = Double.parseDouble(txtAmount.getText().trim());
+
+                if (amt <= 0) {
+                    JOptionPane.showMessageDialog(dialog, "Amount must be positive.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 bank.transfer(from, to, amt);
                 bank.save();
                 refreshAll();
                 dialog.dispose();
+
             } catch (AccountNotFoundException | InsufficientFundsException ex) {
                 JOptionPane.showMessageDialog(dialog, ex.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(dialog, "Please enter a valid amount.",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (IllegalStateException ex) {
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
@@ -877,6 +959,54 @@ public class BankGUI extends JFrame {
         } catch (AccountNotFoundException e) {
             System.err.println(e.getMessage());
         }
+    }
+
+    private void showCloseAccountDialog() {
+        JDialog dialog = new JDialog(this, "Close Account", true);
+        dialog.setSize(350, 160);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout(10, 10));
+
+        JPanel form = new JPanel(new GridLayout(1, 2, 8, 8));
+        form.setBorder(BorderFactory.createEmptyBorder(15, 15, 5, 15));
+
+        JComboBox<String> cmbAccount = buildAccountCombo();
+        form.add(new JLabel("Account:"));
+        form.add(cmbAccount);
+
+        JButton btnClose = new JButton("Close Account");
+        JButton btnCancel = new JButton("Cancel");
+        btnCancel.addActionListener(e -> dialog.dispose());
+
+        btnClose.addActionListener(e -> {
+            try {
+                Account a = getAccountFromCombo(cmbAccount);
+
+                int confirm = JOptionPane.showConfirmDialog(dialog,
+                        "Close account " + a.getAccountId() + "? This cannot be undone.",
+                        "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+                if (confirm != JOptionPane.YES_OPTION)
+                    return;
+
+                bank.closeAccount(a);
+                bank.save();
+                refreshAll();
+                dialog.dispose();
+
+            } catch (AccountNotFoundException ex) {
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnRow.add(btnCancel);
+        btnRow.add(btnClose);
+
+        dialog.add(form, BorderLayout.CENTER);
+        dialog.add(btnRow, BorderLayout.SOUTH);
+        dialog.setVisible(true);
     }
 
 }
