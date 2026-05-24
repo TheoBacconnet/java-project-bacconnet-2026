@@ -3,7 +3,12 @@ package hr.fesb.java.bank;
 import java.io.*;
 import java.util.Map;
 
+/**
+ * Handles all file I/O for the application.
+ * Saves and loads customers, accounts and transactions using CSV files in the data/ folder.
+ */
 public class AccountFileManager {
+
     private static final String DATA_DIR          = "data";
     private static final String CUSTOMERS_FILE    = DATA_DIR + "/customers.csv";
     private static final String ACCOUNTS_FILE     = DATA_DIR + "/accounts.csv";
@@ -11,6 +16,11 @@ public class AccountFileManager {
 
     // ── Save ──────────────────────────────────────────────────────────────
 
+    /**
+     * Saves all customers, accounts and transactions to CSV files.
+     *
+     * @param customers map of all customers
+     */
     public void saveAll(Map<String, Customer> customers) {
         new File(DATA_DIR).mkdirs();
         saveCustomers(customers);
@@ -69,6 +79,12 @@ public class AccountFileManager {
 
     // ── Load ──────────────────────────────────────────────────────────────
 
+    /**
+     * Loads all customers, accounts and transactions from CSV files.
+     *
+     * @param customers map to populate with loaded customers
+     * @param accounts  map to populate with loaded accounts
+     */
     public void loadAll(Map<String, Customer> customers, Map<String, Account> accounts) {
         customers.clear();
         accounts.clear();

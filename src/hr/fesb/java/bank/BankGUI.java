@@ -8,6 +8,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Main Swing window for the Bank Account Management System.
+ * Displays customers, accounts and transactions, and provides dialogs for all operations.
+ */
 public class BankGUI extends JFrame {
 
     private Bank bank;
@@ -30,6 +34,11 @@ public class BankGUI extends JFrame {
     private JTable txTable;
     private JComboBox<String> cmbTxAccount;
 
+    /**
+     * Creates the main window.
+     *
+     * @param bank the Bank instance to work with
+     */
     public BankGUI(Bank bank) {
         super("Bank Account Management System");
         this.bank = bank;
@@ -37,6 +46,7 @@ public class BankGUI extends JFrame {
         refreshAll();
     }
 
+    // Builds the window layout, buttons and tabbed pane
     private void initUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1000, 700);
@@ -75,6 +85,7 @@ public class BankGUI extends JFrame {
         setJMenuBar(buildMenuBar());
     }
 
+    // Builds the dashboard panel showing global statistics
     private JPanel buildDashboardPanel() {
         JPanel panel = new JPanel(new GridLayout(3, 1, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
@@ -94,6 +105,7 @@ public class BankGUI extends JFrame {
         return panel;
     }
 
+    // Builds the customers tab with search bar and table
     private JPanel buildCustomersPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
@@ -123,6 +135,7 @@ public class BankGUI extends JFrame {
         customerTable.setRowHeight(24);
         customerTable.getTableHeader().setReorderingAllowed(false);
 
+        // Double-click on a row to view the customer's accounts
         customerTable.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -137,6 +150,7 @@ public class BankGUI extends JFrame {
         return panel;
     }
 
+    // Builds the accounts tab with type/balance filters and sort button
     private JPanel buildAccountsPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
@@ -199,6 +213,7 @@ public class BankGUI extends JFrame {
         return panel;
     }
 
+    // Builds the transactions tab with account selector and sort buttons
     private JPanel buildTransactionsPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
@@ -234,6 +249,7 @@ public class BankGUI extends JFrame {
         return panel;
     }
 
+    // Refreshes all tabs and dashboard
     private void refreshAll() {
         refreshDashboard();
         refreshCustomerTable();
@@ -242,12 +258,14 @@ public class BankGUI extends JFrame {
         loadTransactions();
     }
 
+    // Updates dashboard labels with current statistics
     private void refreshDashboard() {
         lblTotalCustomers.setText("Total Customers: " + bank.getTotalCustomerCount());
         lblTotalAccounts.setText("Total Accounts: " + bank.getTotalAccountCount());
         lblTotalBalance.setText(String.format("Total Balance: %.2f EUR", bank.getTotalBalance()));
     }
 
+    // Repopulates the customer table sorted by last name
     private void refreshCustomerTable() {
         customerTableModel.setRowCount(0);
         for (Customer c : bank.getCustomersSortedByName()) {
@@ -263,6 +281,7 @@ public class BankGUI extends JFrame {
         }
     }
 
+    // Filters the customer table by name or email
     private void filterCustomers() {
         String query = txtCustomerSearch.getText().trim();
         if (query.isEmpty()) {
@@ -286,6 +305,7 @@ public class BankGUI extends JFrame {
         }
     }
 
+    // Repopulates the account table with all accounts
     private void refreshAccountTable() {
         accountTableModel.setRowCount(0);
         for (Account a : bank.getAllAccounts()) {
@@ -299,6 +319,7 @@ public class BankGUI extends JFrame {
         }
     }
 
+    // Filters the account table by type and/or balance range
     private void filterAccounts() {
         String type = (String) cmbTypeFilter.getSelectedItem();
         String minS = txtMinBalance.getText().trim();
@@ -329,6 +350,7 @@ public class BankGUI extends JFrame {
         }
     }
 
+    // Repopulates the transaction account selector combo
     private void refreshTxAccountCombo() {
         cmbTxAccount.removeAllItems();
         for (Account a : bank.getAllAccounts()) {
@@ -341,6 +363,7 @@ public class BankGUI extends JFrame {
         }
     }
 
+    // Loads transactions for the currently selected account
     private void loadTransactions() {
         txTableModel.setRowCount(0);
         String selected = (String) cmbTxAccount.getSelectedItem();
@@ -362,6 +385,7 @@ public class BankGUI extends JFrame {
         }
     }
 
+    // Returns the full name of a customer by ID, or empty string if not found
     private String getCustomerName(String customerId) {
         try {
             return bank.findCustomer(customerId).getFullName();
@@ -370,6 +394,7 @@ public class BankGUI extends JFrame {
         }
     }
 
+    // Opens the New Account dialog
     private void showNewAccountDialog() {
         if (bank.getAllCustomers().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please create a customer first.",
@@ -432,6 +457,7 @@ public class BankGUI extends JFrame {
         JPanel extraPanel = new JPanel(new BorderLayout());
         extraPanel.add(checkingPanel, BorderLayout.CENTER);
 
+        // Swap the extra fields panel when the account type changes
         cmbType.addActionListener(e -> {
             extraPanel.removeAll();
             switch ((String) cmbType.getSelectedItem()) {
@@ -551,6 +577,7 @@ public class BankGUI extends JFrame {
         dialog.setVisible(true);
     }
 
+    // Opens the New Customer dialog
     private void showNewCustomerDialog() {
         JDialog dialog = new JDialog(this, "New Customer", true);
         dialog.setSize(350, 240);
@@ -611,6 +638,7 @@ public class BankGUI extends JFrame {
         dialog.setVisible(true);
     }
 
+    // Shows a dialog listing all accounts for the selected customer
     private void showCustomerAccounts() {
         int selectedRow = customerTable.getSelectedRow();
         if (selectedRow < 0) {
@@ -671,6 +699,7 @@ public class BankGUI extends JFrame {
         }
     }
 
+    // Builds a combo box populated with all accounts
     private JComboBox<String> buildAccountCombo() {
         JComboBox<String> combo = new JComboBox<>();
         for (Account a : bank.getAllAccounts()) {
@@ -679,6 +708,7 @@ public class BankGUI extends JFrame {
         return combo;
     }
 
+    // Extracts and returns the selected account from a combo box
     private Account getAccountFromCombo(JComboBox<String> combo) throws AccountNotFoundException {
         String selected = (String) combo.getSelectedItem();
         if (selected == null)
@@ -687,6 +717,7 @@ public class BankGUI extends JFrame {
         return bank.findAccount(accId);
     }
 
+    // Opens the Deposit dialog
     private void showDepositDialog() {
         JDialog dialog = new JDialog(this, "Deposit", true);
         dialog.setSize(350, 160);
@@ -739,6 +770,7 @@ public class BankGUI extends JFrame {
         dialog.setVisible(true);
     }
 
+    // Opens the Withdraw dialog
     private void showWithdrawDialog() {
         JDialog dialog = new JDialog(this, "Withdraw", true);
         dialog.setSize(350, 160);
@@ -792,6 +824,7 @@ public class BankGUI extends JFrame {
         dialog.setVisible(true);
     }
 
+    // Opens the Transfer dialog
     private void showTransferDialog() {
         JDialog dialog = new JDialog(this, "Transfer", true);
         dialog.setSize(350, 200);
@@ -862,6 +895,7 @@ public class BankGUI extends JFrame {
         dialog.setVisible(true);
     }
 
+    // Builds the menu bar with File and Help menus
     private JMenuBar buildMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
@@ -920,6 +954,7 @@ public class BankGUI extends JFrame {
         return menuBar;
     }
 
+    // Sorts the transaction table by date or amount
     private void sortTransactions(String criteria) {
         String selected = (String) cmbTxAccount.getSelectedItem();
         if (selected == null)
@@ -961,6 +996,7 @@ public class BankGUI extends JFrame {
         }
     }
 
+    // Opens the Close Account dialog with confirmation prompt
     private void showCloseAccountDialog() {
         JDialog dialog = new JDialog(this, "Close Account", true);
         dialog.setSize(350, 160);
@@ -1008,5 +1044,4 @@ public class BankGUI extends JFrame {
         dialog.add(btnRow, BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
-
 }

@@ -3,8 +3,12 @@ package hr.fesb.java.bank;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Immutable value object representing a single bank transaction.
+ */
 public class Transaction {
 
+    /** Type of transaction. */
     public enum Type {
         DEPOSIT, WITHDRAWAL, INTEREST
     }
@@ -16,42 +20,58 @@ public class Transaction {
     private double amount;
     private double balanceAfter;
 
+    /**
+     * Creates a new Transaction.
+     *
+     * @param dateTime     timestamp of the transaction
+     * @param type         transaction type
+     * @param amount       amount involved (always positive)
+     * @param balanceAfter account balance after this transaction
+     */
     public Transaction(LocalDateTime dateTime, Type type, double amount, double balanceAfter) {
-        this.dateTime = dateTime;
-        this.type = type;
-        this.amount = amount;
+        this.dateTime     = dateTime;
+        this.type         = type;
+        this.amount       = amount;
         this.balanceAfter = balanceAfter;
     }
 
-    public LocalDateTime getDateTime() {
-        return dateTime;
-    }
+    /** @return transaction timestamp */
+    public LocalDateTime getDateTime() { return dateTime; }
 
-    public double getAmount() {
-        return amount;
-    }
+    /** @return transaction amount */
+    public double getAmount() { return amount; }
 
-    public double getBalanceAfter() {
-        return balanceAfter;
-    }
+    /** @return account balance after this transaction */
+    public double getBalanceAfter() { return balanceAfter; }
 
-    public Type getType() {
-        return type;
-    }
+    /** @return transaction type */
+    public Type getType() { return type; }
 
-    public String getFormattedDateTime() {
-        return dateTime.format(FORMATTER);
-    }
+    /** @return formatted date-time string (yyyy-MM-dd HH:mm:ss) */
+    public String getFormattedDateTime() { return dateTime.format(FORMATTER); }
 
+    /**
+     * Serialises this transaction to a pipe-separated CSV line.
+     *
+     * @return CSV line representation
+     */
     public String toCsvLine() {
         return getFormattedDateTime() + "|" + type + "|" + amount + "|" + balanceAfter;
     }
 
+    /**
+     * Deserialises a Transaction from a CSV line produced by {@link #toCsvLine()}.
+     *
+     * @param line CSV line to parse
+     * @return reconstructed Transaction
+     */
     public static Transaction fromCsvLine(String line) {
         String[] p = line.split("\\|");
-        return new Transaction(LocalDateTime.parse(p[0], FORMATTER), Type.valueOf(p[1]), Double.parseDouble(p[2]),
+        return new Transaction(
+                LocalDateTime.parse(p[0], FORMATTER),
+                Type.valueOf(p[1]),
+                Double.parseDouble(p[2]),
                 Double.parseDouble(p[3]));
-
     }
 
     @Override
