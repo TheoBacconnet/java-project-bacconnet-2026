@@ -1,36 +1,36 @@
 package hr.fesb.java.bank;
 
 import java.io.*;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Handles all file I/O for the application.
- * Saves and loads customers, accounts and transactions using CSV files in the data/ folder.
+ * Saves and loads customers, accounts and transactions using CSV files in the
+ * data/ folder.
  */
 public class AccountFileManager {
 
-    private static final String DATA_DIR          = "data";
-    private static final String CUSTOMERS_FILE    = DATA_DIR + "/customers.csv";
-    private static final String ACCOUNTS_FILE     = DATA_DIR + "/accounts.csv";
+    private static final String DATA_DIR = "data";
+    private static final String CUSTOMERS_FILE = DATA_DIR + "/customers.csv";
+    private static final String ACCOUNTS_FILE = DATA_DIR + "/accounts.csv";
     private static final String TRANSACTIONS_FILE = DATA_DIR + "/transactions.csv";
-
-    // ── Save ──────────────────────────────────────────────────────────────
 
     /**
      * Saves all customers, accounts and transactions to CSV files.
      *
-     * @param customers map of all customers
+     * @param customers list of all customers
      */
-    public void saveAll(Map<String, Customer> customers) {
+    public void saveAll(List<Customer> customers) {
         new File(DATA_DIR).mkdirs();
         saveCustomers(customers);
         saveAccounts(customers);
         saveTransactions(customers);
     }
 
-    private void saveCustomers(Map<String, Customer> customers) {
+    private void saveCustomers(List<Customer> customers) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(CUSTOMERS_FILE))) {
-            for (Customer customer : customers.values()) {
+            for (Customer customer : customers) {
                 writer.write(String.format("%s,%s,%s,%s,%s%n",
                         customer.getCustomerId(),
                         customer.getFirstName(),
@@ -43,9 +43,9 @@ public class AccountFileManager {
         }
     }
 
-    private void saveAccounts(Map<String, Customer> customers) {
+    private void saveAccounts(List<Customer> customers) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(ACCOUNTS_FILE))) {
-            for (Customer customer : customers.values()) {
+            for (Customer customer : customers) {
                 for (Account account : customer.getAccounts()) {
                     writer.write(String.format("%s,%s,%s,%s,%s,%s%n",
                             account.getAccountId(),
@@ -61,9 +61,9 @@ public class AccountFileManager {
         }
     }
 
-    private void saveTransactions(Map<String, Customer> customers) {
+    private void saveTransactions(List<Customer> customers) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(TRANSACTIONS_FILE))) {
-            for (Customer customer : customers.values()) {
+            for (Customer customer : customers) {
                 for (Account account : customer.getAccounts()) {
                     for (Transaction transaction : account.getTransactions()) {
                         writer.write(String.format("%s|%s%n",
@@ -77,15 +77,13 @@ public class AccountFileManager {
         }
     }
 
-    // ── Load ──────────────────────────────────────────────────────────────
-
     /**
      * Loads all customers, accounts and transactions from CSV files.
      *
-     * @param customers map to populate with loaded customers
+     * @param customers list to populate with loaded customers
      * @param accounts  map to populate with loaded accounts
      */
-    public void loadAll(Map<String, Customer> customers, Map<String, Account> accounts) {
+    public void loadAll(List<Customer> customers, Map<String, Account> accounts) {
         customers.clear();
         accounts.clear();
         loadCustomers(customers);
@@ -93,14 +91,15 @@ public class AccountFileManager {
         loadTransactions(accounts);
     }
 
-    private void loadCustomers(Map<String, Customer> customers) {
+    private void loadCustomers(List<Customer> customers) {
         try (BufferedReader br = new BufferedReader(new FileReader(CUSTOMERS_FILE))) {
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.isBlank()) continue;
+                if (line.isBlank())
+                    continue;
                 String[] p = line.split(",");
                 Customer c = new Customer(p[0], p[1], p[2], p[3], p[4]);
-                customers.put(c.getCustomerId(), c);
+                customers.add(c);
             }
         } catch (FileNotFoundException e) {
             System.err.println("No existing customers found, starting fresh.");
@@ -109,15 +108,16 @@ public class AccountFileManager {
         }
     }
 
-    private void loadAccounts(Map<String, Customer> customers, Map<String, Account> accounts) {
+    private void loadAccounts(List<Customer> customers, Map<String, Account> accounts) {
         try (BufferedReader br = new BufferedReader(new FileReader(ACCOUNTS_FILE))) {
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.isBlank()) continue;
-                String[] p     = line.split(",");
-                String accId   = p[0];
-                String custId  = p[1];
-                String type    = p[2];
+                if (line.isBlank())
+                    continue;
+                String[] p = line.split(",");
+                String accId = p[0];
+                String custId = p[1];
+                String type = p[2];
                 double balance = Double.parseDouble(p[3]);
                 boolean active = Boolean.parseBoolean(p[4]);
 
@@ -140,12 +140,20 @@ public class AccountFileManager {
                         break;
                 }
 
-                if (a == null) continue;
+                if (a == null)
+                    continue;
                 a.setBalanceDirectly(balance);
                 a.setActive(active);
 
-                Customer c = customers.get(custId);
-                if (c != null) c.addAccount(a);
+                Customer c = null;
+                for (Customer customer : customers) {
+                    if (customer.getCustomerId().equals(custId)) {
+                        c = customer;
+                        break;
+                    }
+                }
+                if (c != null)
+                    c.addAccount(a);
                 accounts.put(accId, a);
             }
         } catch (FileNotFoundException e) {
@@ -159,9 +167,10 @@ public class AccountFileManager {
         try (BufferedReader br = new BufferedReader(new FileReader(TRANSACTIONS_FILE))) {
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.isBlank()) continue;
-                int sep       = line.indexOf('|');
-                String accId  = line.substring(0, sep);
+                if (line.isBlank())
+                    continue;
+                int sep = line.indexOf('|');
+                String accId = line.substring(0, sep);
                 String txLine = line.substring(sep + 1);
 
                 Account a = accounts.get(accId);

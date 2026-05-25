@@ -10,11 +10,12 @@ import java.util.Comparator;
 
 /**
  * Central class managing all customers and accounts.
- * Provides all business operations and delegates persistence to AccountFileManager.
+ * Provides all business operations and delegates persistence to
+ * AccountFileManager.
  */
 public class Bank {
 
-    private Map<String, Customer> customers;
+    private List<Customer> customers;
     private Map<String, Account> accounts;
     private int customerCounter;
     private int accountCounter;
@@ -24,7 +25,7 @@ public class Bank {
      * Creates a new Bank instance and loads any existing data from CSV files.
      */
     public Bank() {
-        this.customers = new HashMap<>();
+        this.customers = new ArrayList<>();
         this.accounts = new HashMap<>();
         this.customerCounter = 1000;
         this.accountCounter = 1000;
@@ -42,10 +43,12 @@ public class Bank {
      * @param phone     customer's phone number
      * @return the newly created customer
      */
-    public Customer createCustomer(String firstName, String lastName, String email, String phone) {
+    public Customer createCustomer(String firstName, String lastName,
+            String email, String phone) {
         String customerId = "C" + (++customerCounter);
-        Customer customer = new Customer(customerId, firstName, lastName, email, phone);
-        customers.put(customerId, customer);
+        Customer customer = new Customer(customerId, firstName,
+                lastName, email, phone);
+        customers.add(customer);
         return customer;
     }
 
@@ -56,11 +59,13 @@ public class Bank {
      * @return the matching customer
      * @throws AccountNotFoundException if no customer with that ID exists
      */
-    public Customer findCustomer(String customerId) throws AccountNotFoundException {
-        Customer customer = customers.get(customerId);
-        if (customer == null)
-            throw new AccountNotFoundException(customerId);
-        return customer;
+    public Customer findCustomer(String customerId)
+            throws AccountNotFoundException {
+        for (Customer customer : customers) {
+            if (customer.getCustomerId().equals(customerId))
+                return customer;
+        }
+        throw new AccountNotFoundException(customerId);
     }
 
     /**
@@ -78,8 +83,8 @@ public class Bank {
     }
 
     /** @return all customers in the bank */
-    public Collection<Customer> getAllCustomers() {
-        return customers.values();
+    public List<Customer> getAllCustomers() {
+        return customers;
     }
 
     /**
@@ -87,7 +92,8 @@ public class Bank {
      *
      * @param customerId     owning customer ID
      * @param initialBalance opening balance
-     * @param overdraftLimit maximum negative balance allowed (must be positive or zero)
+     * @param overdraftLimit maximum negative balance allowed (must be positive or
+     *                       zero)
      * @return the newly created account
      * @throws AccountNotFoundException if the customer does not exist
      */
@@ -126,7 +132,8 @@ public class Bank {
      *
      * @param customerId     owning customer ID
      * @param initialBalance opening balance
-     * @param overdraftLimit maximum negative balance allowed (must be positive or zero)
+     * @param overdraftLimit maximum negative balance allowed (must be positive or
+     *                       zero)
      * @param companyName    name of the company
      * @param vatNumber      VAT registration number
      * @return the newly created account
@@ -170,7 +177,8 @@ public class Bank {
      * @param from   source account
      * @param to     destination account
      * @param amount amount to transfer
-     * @throws InsufficientFundsException if the source account has insufficient funds
+     * @throws InsufficientFundsException if the source account has insufficient
+     *                                    funds
      */
     public void transfer(Account from, Account to, double amount) throws InsufficientFundsException {
         from.withdraw(amount);
@@ -186,7 +194,7 @@ public class Bank {
         account.closeAccount();
     }
 
-    /** Applies monthly rules  to all active accounts. */
+    /** Applies monthly rules to all active accounts. */
     public void applyMonthlyRules() {
         for (Account account : accounts.values()) {
             if (account.isActive())
@@ -207,8 +215,8 @@ public class Bank {
     /** @return sum of all account balances */
     public double getTotalBalance() {
         double total = 0;
-        for (Account account : accounts.values())
-            total += account.getBalance();
+        for (Customer customer : customers)
+            total += customer.getTotalBalance();
         return total;
     }
 
@@ -226,7 +234,7 @@ public class Bank {
     public List<Account> searchByCustomerName(String query) {
         List<Account> result = new ArrayList<>();
         String lowerQuery = query.toLowerCase();
-        for (Customer c : customers.values()) {
+        for (Customer c : customers) {
             if (c.getFullName().toLowerCase().contains(lowerQuery))
                 result.addAll(c.getAccounts());
         }
@@ -275,16 +283,17 @@ public class Bank {
 
     // Syncs ID counters after loading to avoid duplicate IDs
     private void syncCounters() {
-        for (Customer c : customers.values()) {
-            int custIdNum = Integer.parseInt(c.getCustomerId().substring(1));
+        for (Customer c : customers) {
+            int custIdNum = Integer.parseInt(
+                    c.getCustomerId().substring(1));
             if (custIdNum > customerCounter)
                 customerCounter = custIdNum;
-
-            for (Account a : accounts.values()) {
-                int accIdNum = Integer.parseInt(a.getAccountId().substring(1));
-                if (accIdNum > accountCounter)
-                    accountCounter = accIdNum;
-            }
+        }
+        for (Account a : accounts.values()) {
+            int accIdNum = Integer.parseInt(
+                    a.getAccountId().substring(1));
+            if (accIdNum > accountCounter)
+                accountCounter = accIdNum;
         }
     }
 
@@ -294,7 +303,7 @@ public class Bank {
      * @return sorted list of customers
      */
     public List<Customer> getCustomersSortedByName() {
-        List<Customer> sorted = new ArrayList<>(customers.values());
+        List<Customer> sorted = new ArrayList<>(customers);
         Collections.sort(sorted, new Comparator<Customer>() {
             @Override
             public int compare(Customer c1, Customer c2) {
