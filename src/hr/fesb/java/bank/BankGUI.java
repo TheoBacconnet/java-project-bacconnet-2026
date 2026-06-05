@@ -356,7 +356,7 @@ public class BankGUI extends JFrame {
         for (Account a : bank.getAllAccounts()) {
             try {
                 Customer c = bank.findCustomer(a.getCustomerId());
-                cmbTxAccount.addItem(a.getAccountId() + " — " + c.getFullName());
+                cmbTxAccount.addItem(a.getAccountId() + "-" + c.getFullName());
             } catch (AccountNotFoundException e) {
                 cmbTxAccount.addItem(a.getAccountId());
             }
@@ -369,7 +369,7 @@ public class BankGUI extends JFrame {
         String selected = (String) cmbTxAccount.getSelectedItem();
         if (selected == null)
             return;
-        String accId = selected.split(" — ")[0];
+        String accId = selected.split("-")[0];
         try {
             Account a = bank.findAccount(accId);
             for (Transaction t : a.getTransactions()) {

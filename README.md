@@ -1,9 +1,9 @@
 # Bank Account Management System
 
-**Student:** Theo Emmanuel Bernard Bacconnet  
-**Course:** Programming in Java (FELP11)  
-**University:** University of Split — FESB  
-**Academic Year:** 2025/2026  
+**Student:** Theo Emmanuel Bernard Bacconnet
+**Course:** Programming in Java (FELP 11)
+**University:** University of Split - FESB
+**Academic Year:** 2025/2026
 **Instructor:** Assoc. Prof. Vladimir Pleština, PhD
 
 ---
@@ -78,17 +78,6 @@ java -cp bin hr.fesb.java.bank.BankApp
 ```
 
 The application will load any existing data from the `data/` folder and open the main window.
-
----
-
-## Java Concepts Used
-
-- OOP with abstract classes and inheritance (Account, CheckingAccount, SavingsAccount, BusinessAccount)
-- Interfaces (Transactable, Reportable)
-- Custom exceptions (InsufficientFundsException, AccountNotFoundException)
-- Collections with HashMap and ArrayList, sorting with Collections.sort() and custom Comparators
-- File I/O with BufferedReader and BufferedWriter
-- Swing GUI with JFrame, JTable, JComboBox, JMenuBar, and custom dialogs
 
 ---
 
