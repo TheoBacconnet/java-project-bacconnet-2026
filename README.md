@@ -1,10 +1,10 @@
 # Bank Account Management System
 
-**Student:** Theo Emmanuel Bernard Bacconnet
-**Course:** Programming in Java (FELP 11)
-**University:** University of Split - FESB
-**Academic Year:** 2025/2026
-**Instructor:** Assoc. Prof. Vladimir Pleština, PhD
+**Student:** Theo Emmanuel Bernard Bacconnet  
+**Course:** Programming in Java (FELP 11)  
+**University:** University of Split - FESB  
+**Academic Year:** 2025/2026  
+**Instructor:** Assoc. Prof. Vladimir Pleština, PhD  
 
 ---
 
