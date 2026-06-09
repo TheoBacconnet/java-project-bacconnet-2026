@@ -412,7 +412,7 @@ public class BankGUI extends JFrame {
 
         JComboBox<String> cmbCustomer = new JComboBox<>();
         for (Customer c : bank.getAllCustomers()) {
-            cmbCustomer.addItem(c.getCustomerId() + " — " + c.getFullName());
+            cmbCustomer.addItem(c.getCustomerId() + " - " + c.getFullName());
         }
 
         JComboBox<String> cmbType = new JComboBox<>(
@@ -485,7 +485,7 @@ public class BankGUI extends JFrame {
         btnCreate.addActionListener(e -> {
             try {
                 String selected = (String) cmbCustomer.getSelectedItem();
-                String custId = selected.split(" — ")[0];
+                String custId = selected.split(" - ")[0];
                 double balance = Double.parseDouble(txtBalance.getText().trim());
                 String type = (String) cmbType.getSelectedItem();
 
@@ -658,7 +658,7 @@ public class BankGUI extends JFrame {
                 return;
             }
 
-            JDialog dialog = new JDialog(this, "Accounts — " + c.getFullName(), true);
+            JDialog dialog = new JDialog(this, "Accounts - " + c.getFullName(), true);
             dialog.setSize(550, 250);
             dialog.setLocationRelativeTo(this);
             dialog.setLayout(new BorderLayout(10, 10));
@@ -959,7 +959,7 @@ public class BankGUI extends JFrame {
         String selected = (String) cmbTxAccount.getSelectedItem();
         if (selected == null)
             return;
-        String accId = selected.split(" — ")[0];
+        String accId = selected.split("-")[0];
 
         try {
             Account a = bank.findAccount(accId);

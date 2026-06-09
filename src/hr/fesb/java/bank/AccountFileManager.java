@@ -66,7 +66,7 @@ public class AccountFileManager {
             for (Customer customer : customers) {
                 for (Account account : customer.getAccounts()) {
                     for (Transaction transaction : account.getTransactions()) {
-                        writer.write(String.format("%s|%s%n",
+                        writer.write(String.format("%s,%s%n",
                                 account.getAccountId(),
                                 transaction.toCsvLine()));
                     }
@@ -169,13 +169,13 @@ public class AccountFileManager {
             while ((line = br.readLine()) != null) {
                 if (line.isBlank())
                     continue;
-                int sep = line.indexOf('|');
-                String accId = line.substring(0, sep);
-                String txLine = line.substring(sep + 1);
-
+                String[] p = line.split(",");
+                String accId = p[0];
+                Transaction t = Transaction.fromCsvLine(
+                        p[1] + "," + p[2] + "," + p[3] + "," + p[4]);
                 Account a = accounts.get(accId);
                 if (a != null) {
-                    a.addTransactionDirectly(Transaction.fromCsvLine(txLine));
+                    a.addTransactionDirectly(t);
                 }
             }
         } catch (FileNotFoundException e) {

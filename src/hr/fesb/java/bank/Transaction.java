@@ -56,7 +56,7 @@ public class Transaction {
      * @return CSV line representation
      */
     public String toCsvLine() {
-        return getFormattedDateTime() + "|" + type + "|" + amount + "|" + balanceAfter;
+        return getFormattedDateTime() + "," + type + "," + amount + "," + balanceAfter;
     }
 
     /**
@@ -66,7 +66,7 @@ public class Transaction {
      * @return reconstructed Transaction
      */
     public static Transaction fromCsvLine(String line) {
-        String[] p = line.split("\\|");
+        String[] p = line.split(",");
         return new Transaction(
                 LocalDateTime.parse(p[0], FORMATTER),
                 Type.valueOf(p[1]),
