@@ -87,3 +87,6 @@ The application will load any existing data from the `data/` folder and open the
 - The monthly rules must be applied manually via the File menu
 - No multi-user support
 - There is no way to edit a customer's information (email, phone) after they have been created
+- Customers cannot be deleted once created
+- No format validation on phone numbers and email addresses
+- Entering an invalid value in the Min/Max Balance fields clears the account table, press Reset to restore the full list
